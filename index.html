@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="ReadShelf makes it easy to discover, save, and read books online.">
+  <title>ReadShelf — Find your next read</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml"><link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header"><div class="container nav-shell">
+  <a class="brand" href="index.html"><img src="assets/logo.svg" alt=""><span>ReadShelf</span></a>
+  <nav class="nav-links" aria-label="Primary"><a class="active" href="index.html">Home</a><a href="browse.html">Browse</a><a class="shelf-link" href="shelf.html">My Shelf <span class="shelf-count" data-shelf-count>0</span></a></nav>
+  <div class="nav-actions"><a class="btn btn-secondary" href="signin.html">Sign in</a><a class="btn btn-primary" href="signin.html">Create account</a><button class="mobile-menu" data-menu-toggle aria-expanded="false" aria-label="Open menu">☰</button></div>
+</div><nav class="mobile-nav" aria-label="Mobile"><a href="index.html">Home</a><a href="browse.html">Browse</a><a href="shelf.html">My Shelf</a></nav></header>
+<main id="main">
+  <section class="hero"><div class="container hero-grid"><div class="hero-copy">
+    <p class="eyebrow">Your personal online library</p><h1>Find a book.<br>Start reading.</h1>
+    <p>Discover public-domain books, save favorites to your shelf, and return to your reading progress whenever you want.</p>
+    <form class="search-box" id="heroSearch" role="search"><input aria-label="Search books" type="search" placeholder="Search by title, author, or genre…"><button class="btn btn-primary" type="submit">Search books</button></form>
+    <div class="quick-genres"><span>Popular:</span><button class="genre-pill" data-genre-link="Classic">Classics</button><button class="genre-pill" data-genre-link="Mystery">Mystery</button><button class="genre-pill" data-genre-link="Science Fiction">Sci-Fi</button></div>
+  </div><aside class="continue-card" id="continuePanel" aria-label="Continue reading"></aside></div></section>
+
+  <section class="section"><div class="container"><div class="section-heading"><div><p class="eyebrow">Discover</p><h2>Popular books</h2><p>A quick way to jump into something worth reading.</p></div><a class="text-link" href="browse.html">Browse all →</a></div><div class="book-grid" id="featuredBooks"></div></div></section>
+
+  <section class="section section-soft"><div class="container feature-grid"><div class="section-copy-block"><p class="eyebrow">My Shelf</p><h2>Your reading list, without the clutter.</h2><p>Save books you want to read and keep your progress in one place. ReadShelf is designed to reduce the number of steps between finding a title and opening it.</p><ul class="feature-list"><li><span>✓</span>Save books with one click</li><li><span>✓</span>Continue from saved reading progress</li><li><span>✓</span>Keep a clean personal reading list</li></ul><a class="btn btn-dark" href="shelf.html">Open My Shelf</a></div><div class="shelf-demo"><div class="shelf-demo-row"><div class="shelf-demo-cover cover-pride">P&amp;P</div><div><strong>Pride and Prejudice</strong><small>Saved</small></div><span class="shelf-demo-status">✓</span></div><div class="shelf-demo-row"><div class="shelf-demo-cover cover-frank">F</div><div><strong>Frankenstein</strong><small>32% read</small></div><span class="shelf-demo-status">✓</span></div><div class="shelf-demo-row"><div class="shelf-demo-cover cover-holmes">SH</div><div><strong>Sherlock Holmes</strong><small>Want to read</small></div><span class="shelf-demo-status">✓</span></div></div></div></section>
+
+  <section class="section"><div class="container"><div class="section-heading"><div><p class="eyebrow">Explore</p><h2>Browse by category</h2></div></div><div class="category-grid"><button class="category-card" data-genre-link="Classic"><span>01</span><strong>Classics</strong><small>Timeless stories</small></button><button class="category-card" data-genre-link="Mystery"><span>02</span><strong>Mystery</strong><small>Cases & suspense</small></button><button class="category-card" data-genre-link="Science Fiction"><span>03</span><strong>Science Fiction</strong><small>Future worlds</small></button><button class="category-card" data-genre-link="Romance"><span>04</span><strong>Romance</strong><small>Love stories</small></button></div></div></section>
+
+  <section class="cta"><div class="container"><div class="cta-card"><div><p class="eyebrow">Start your shelf</p><h2>Less searching. More reading.</h2><p>Create an account to keep your shelf and reading progress synced across devices.</p></div><a class="btn" href="signin.html">Create free account</a></div></div></section>
+</main>
+<footer class="site-footer"><div class="container footer-inner"><a class="brand" href="index.html"><img src="assets/logo.svg" alt=""><span>ReadShelf</span></a><span>College capstone prototype · <span data-current-year></span></span><div class="footer-links"><a href="browse.html">Browse</a><a href="shelf.html">My Shelf</a></div></div></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script><script src="js/supabase-config.js"></script><script src="js/supabase-client.js"></script><script src="js/data.js"></script><script src="js/app.js"></script><script src="js/home.js"></script>
+</body></html>
