@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    // Private profile document for each authenticated user.
+    match /users/{userId} {
+      allow read, create, update, delete: if isOwner(userId);
+
+      // One document per saved/read book. The Google Books volume ID is the doc ID.
+      match /library/{bookId} {
+        allow read, create, update, delete: if isOwner(userId);
+      }
+
+      // Optional future analytics/history collection.
+      match /readingSessions/{sessionId} {
+        allow read, create, update, delete: if isOwner(userId);
+      }
+    }
+
+    // Curated home-page IDs may be public to read.
+    // Client-side writes stay disabled until an admin workflow exists.
+    match /featuredBooks/{itemId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Optional metadata cache. If used, writes should come from trusted server code,
+    // not directly from browsers.
+    match /bookCache/{bookId} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}
