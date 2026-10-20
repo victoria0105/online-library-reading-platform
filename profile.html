@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Manage your ReadShelf profile, reading preferences, and account information.">
+  <title>My Profile — ReadShelf</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header class="site-header"><div class="container nav-shell"><a class="brand" href="index.html"><img src="assets/logo.svg" alt=""><span>ReadShelf</span></a><nav class="nav-links"><a href="index.html">Home</a><a href="browse.html">Browse</a><a href="shelf.html">My Shelf <span class="shelf-count" data-shelf-count>0</span></a><a class="active" href="profile.html">Profile</a></nav><div class="nav-actions"><button class="mobile-menu" data-menu-toggle aria-expanded="false" aria-label="Open menu">☰</button></div></div><nav class="mobile-nav"><a href="index.html">Home</a><a href="browse.html">Browse</a><a href="shelf.html">My Shelf</a><a href="profile.html">Profile</a></nav></header>
+
+<main class="profile-main">
+  <div class="container">
+    <section class="profile-loading" id="profileLoading"><p>Loading your profile…</p></section>
+
+    <section class="profile-setup" id="profileSetup" hidden>
+      <p class="eyebrow">Firebase setup</p><h1>Connect ReadShelf to Firebase</h1>
+      <p>The profile page is built, but Firebase still needs to be connected before accounts can be used.</p>
+      <a class="btn btn-primary" href="signin.html">Back to sign in</a>
+    </section>
+
+    <div id="profileContent" hidden>
+      <section class="profile-hero">
+        <div class="profile-avatar" id="profileAvatar">RS</div>
+        <div class="profile-identity">
+          <p class="eyebrow">My profile</p>
+          <h1 id="profileName">Reader</h1>
+          <p id="profileEmail"></p>
+          <div class="profile-provider-row" id="providerRow"></div>
+        </div>
+        <a class="btn btn-secondary" href="shelf.html">View My Shelf</a>
+      </section>
+
+      <section class="profile-stats" aria-label="Reading statistics">
+        <article><strong id="statSaved">0</strong><span>Saved books</span></article>
+        <article><strong id="statReading">0</strong><span>Reading</span></article>
+        <article><strong id="statFinished">0</strong><span>Completed</span></article>
+        <article><strong id="statProgress">0%</strong><span>Average progress</span></article>
+      </section>
+
+      <div class="profile-grid">
+        <section class="profile-panel">
+          <div class="profile-panel-heading"><div><p class="eyebrow">Personal details</p><h2>Edit profile</h2></div></div>
+          <div class="auth-status" id="profileStatus" hidden role="status"></div>
+          <form class="profile-form" id="profileForm">
+            <label><span>Display name</span><input class="field" id="displayName" name="displayName" type="text" maxlength="80" autocomplete="name" required></label>
+            <label><span>About me</span><textarea class="field profile-textarea" id="bio" name="bio" maxlength="300" placeholder="Tell us a little about your reading interests…"></textarea><small><span id="bioCount">0</span>/300</small></label>
+            <fieldset class="genre-fieldset"><legend>Favorite genres</legend><div class="genre-checkboxes" id="genreChoices">
+              <label><input type="checkbox" value="Classics"> Classics</label>
+              <label><input type="checkbox" value="Mystery"> Mystery</label>
+              <label><input type="checkbox" value="Science Fiction"> Sci-Fi</label>
+              <label><input type="checkbox" value="Romance"> Romance</label>
+              <label><input type="checkbox" value="Fantasy"> Fantasy</label>
+              <label><input type="checkbox" value="Horror"> Horror</label>
+              <label><input type="checkbox" value="Adventure"> Adventure</label>
+              <label><input type="checkbox" value="Fiction"> Fiction</label>
+            </div></fieldset>
+            <button class="btn btn-primary" type="submit">Save profile</button>
+          </form>
+        </section>
+
+        <aside class="profile-panel profile-account-panel">
+          <p class="eyebrow">Account</p><h2>Account details</h2>
+          <dl class="account-details">
+            <div><dt>Email</dt><dd id="accountEmail">—</dd></div>
+            <div><dt>Sign-in method</dt><dd id="accountProvider">—</dd></div>
+            <div><dt>Email verified</dt><dd id="accountVerified">—</dd></div>
+          </dl>
+          <button class="btn btn-secondary btn-full" id="resetPasswordProfile" type="button">Send password reset email</button>
+          <button class="btn btn-secondary btn-full" data-signout type="button">Sign out</button>
+          <p class="profile-account-note">Authentication is handled by Firebase. ReadShelf does not store your password in Firestore.</p>
+        </aside>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer"><div class="container footer-inner"><a class="brand" href="index.html"><img src="assets/logo.svg" alt=""><span>ReadShelf</span></a><span>CISC 4900 project · <span data-current-year></span></span><div class="footer-links"><a href="browse.html">Browse</a><a href="shelf.html">My Shelf</a></div></div></footer>
+<script src="js/firebase-config.js"></script>
+<script src="js/firebase-client.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/profile.js"></script>
+</body>
+</html>

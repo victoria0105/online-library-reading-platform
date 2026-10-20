@@ -1,41 +1,46 @@
 # ReadShelf Backend Architecture
 
+## Current direction
+
+ReadShelf uses **Firebase Authentication** for accounts and **Cloud Firestore** for user data. The public book catalog will be supplied by the Google Books API in the next integration phase.
+
 ## Data model
 
 ```text
-auth.users
-    │
-    ├──< user_shelf >── books
-    │
-    └──< reading_progress >── books
+Firebase Authentication
+        │
+        ▼
+   users/{uid}
+        │
+        ├── library/{bookId}
+        │      ├── status
+        │      ├── progressPercent
+        │      └── book metadata snapshot
+        │
+        └── readingSessions/{sessionId}   (future)
 ```
 
-### books
+### `users/{uid}`
 
-Stores the shared catalog: title, author, genre, book metadata, and short reading samples.
+Stores profile information such as display name, email, profile photo URL, authentication providers, bio, and favorite genres.
 
-### user_shelf
+### `users/{uid}/library/{bookId}`
 
-Composite key: `user_id + book_id`.
+Stores one user's relationship with one book: saved status, reading status, progress, and lightweight book metadata needed to render My Shelf.
 
-A row means that a signed-in user saved that book.
+### Public book catalog
 
-### reading_progress
-
-Composite key: `user_id + book_id`.
-
-Stores a value from 0–100 representing the user's reading progress.
+ReadShelf should not copy an entire public book database into Firestore. Search and book metadata will come from the Google Books API. Firestore stores user-specific data.
 
 ## Frontend integration
 
-- `js/supabase-config.js` — project URL and publishable key
-- `js/supabase-client.js` — Auth and database calls
-- `js/app.js` — shared application state and sync logic
-- `js/signin.js` — account creation and login
-- `supabase/schema.sql` — database schema, RLS, grants, and seed books
+- `js/firebase-config.js` — Firebase Web App configuration
+- `js/firebase-client.js` — Firebase Auth + Firestore data functions
+- `js/app.js` — shared application state, navigation, My Shelf and progress synchronization
+- `js/signin.js` — email/password registration, login, Google Sign-In, password reset
+- `profile.html` + `js/profile.js` — user profile and reading statistics
+- `firebase/firestore.rules` — Firestore security rules
 
 ## Fallback mode
 
-Until Supabase is configured, the website keeps the original bundled book catalog and local browser storage. This allows the frontend to remain demonstrable while backend setup is pending.
-
-As soon as valid Supabase project settings are added, ReadShelf automatically switches to server-backed account data.
+If Firebase has not yet been configured, the public frontend still works with the bundled starter books and browser `localStorage`. Account actions remain disabled until the Firebase project configuration is added.

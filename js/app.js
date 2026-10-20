@@ -185,7 +185,8 @@
       const menu = '<button class="mobile-menu" data-menu-toggle aria-expanded="false" aria-label="Open menu">☰</button>';
       if (state.user) {
         const email = state.user.email || "Account";
-        container.innerHTML = `<span class="user-chip" title="${email}">${email}</span><button class="btn btn-secondary" type="button" data-signout>Sign out</button>${menu}`;
+        const label = state.user.displayName || email;
+        container.innerHTML = `<a class="user-chip" href="profile.html" title="${email}">${label}</a><button class="btn btn-secondary" type="button" data-signout>Sign out</button>${menu}`;
       } else {
         container.innerHTML = `<a class="btn btn-secondary" href="signin.html">Sign in</a><a class="btn btn-primary" href="signin.html?mode=signup">Create account</a>${menu}`;
       }
@@ -193,18 +194,29 @@
 
     document.querySelectorAll(".mobile-nav").forEach(nav => {
       nav.querySelectorAll("[data-mobile-auth], a[href^=\"signin.html\"]").forEach(el => el.remove());
-      const authItem = document.createElement(state.user ? "button" : "a");
-      authItem.dataset.mobileAuth = "true";
-      authItem.className = "mobile-auth-link";
       if (state.user) {
-        authItem.type = "button";
-        authItem.dataset.signout = "true";
-        authItem.textContent = "Sign out";
+        const profileItem = document.createElement("a");
+        profileItem.dataset.mobileAuth = "true";
+        profileItem.className = "mobile-auth-link";
+        profileItem.href = "profile.html";
+        profileItem.textContent = "Profile";
+        nav.appendChild(profileItem);
+
+        const signoutItem = document.createElement("button");
+        signoutItem.dataset.mobileAuth = "true";
+        signoutItem.className = "mobile-auth-link";
+        signoutItem.type = "button";
+        signoutItem.dataset.signout = "true";
+        signoutItem.textContent = "Sign out";
+        nav.appendChild(signoutItem);
       } else {
+        const authItem = document.createElement("a");
+        authItem.dataset.mobileAuth = "true";
+        authItem.className = "mobile-auth-link";
         authItem.href = "signin.html";
         authItem.textContent = "Sign in";
+        nav.appendChild(authItem);
       }
-      nav.appendChild(authItem);
     });
   }
 
@@ -238,10 +250,9 @@
       }
     } catch (error) {
       console.error("ReadShelf initialization failed:", error);
-      if (!state.configured) {
-        state.shelf = readGuestShelf();
-        state.progress = readGuestProgress();
-      }
+      state.shelf = readGuestShelf();
+      state.progress = readGuestProgress();
+      state.configured = false;
     }
 
     state.ready = true;

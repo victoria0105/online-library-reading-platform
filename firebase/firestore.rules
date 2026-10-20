@@ -9,30 +9,28 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == userId;
     }
 
-    // Private profile document for each authenticated user.
+    // Private ReadShelf profile for the signed-in user.
     match /users/{userId} {
-      allow read, create, update, delete: if isOwner(userId);
+      allow create, read, update, delete: if isOwner(userId);
 
-      // One document per saved/read book. The Google Books volume ID is the doc ID.
+      // Saved books + reading status/progress.
       match /library/{bookId} {
-        allow read, create, update, delete: if isOwner(userId);
+        allow create, read, update, delete: if isOwner(userId);
       }
 
-      // Optional future analytics/history collection.
+      // Reserved for future reading-history/recommendation work.
       match /readingSessions/{sessionId} {
-        allow read, create, update, delete: if isOwner(userId);
+        allow create, read, update, delete: if isOwner(userId);
       }
     }
 
-    // Curated home-page IDs may be public to read.
-    // Client-side writes stay disabled until an admin workflow exists.
+    // Optional public curated lists. Browser clients cannot write them.
     match /featuredBooks/{itemId} {
       allow read: if true;
       allow write: if false;
     }
 
-    // Optional metadata cache. If used, writes should come from trusted server code,
-    // not directly from browsers.
+    // Optional public metadata cache. Writes must come from trusted server code.
     match /bookCache/{bookId} {
       allow read: if true;
       allow write: if false;

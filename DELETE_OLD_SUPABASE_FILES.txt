@@ -1,0 +1,8 @@
+After the Firebase version is uploaded and working, delete these old Supabase-only files from GitHub:
+
+- js/supabase-client.js
+- js/supabase-config.js
+- supabase/schema.sql
+- docs/SUPABASE_SETUP.md
+
+The new HTML pages no longer load them. Removing them simply keeps the repository clean and avoids confusion.

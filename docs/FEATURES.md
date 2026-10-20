@@ -4,29 +4,25 @@
 
 1. User lands on Home.
 2. User searches or browses books.
-3. User opens the redesigned Book Details page.
-4. User sees description, metadata, reading availability, progress, and related titles.
-5. User can save the title to My Shelf.
-6. User opens the redesigned Reader.
-7. User can change text size, line spacing, font, and reading theme.
-8. User can save reading progress and a local reading-position bookmark.
+3. User opens a Book Details page.
+4. User creates an account or signs in with email/password or Google.
+5. User can edit a personal profile.
+6. User saves books to My Shelf.
+7. User updates reading progress in the Reader.
+8. Firebase stores signed-in user profile, shelf, and progress data.
 
-## Current prototype storage
+## Current account features
 
-The frontend currently uses browser `localStorage` for demo behavior such as shelf items, reading progress, reader preferences, and bookmarks.
+- Email/password registration
+- Email/password sign-in
+- Google Sign-In
+- Password reset email
+- Sign out
+- User profile page
+- Display name, bio, and favorite genres
+- Reading statistics based on My Shelf
+- Firestore-backed shelf and reading progress when Firebase is connected
 
-This is temporary. The next backend milestone will move user-specific data to Firebase Authentication and Cloud Firestore.
+## Fallback behavior
 
-## Planned production data flow
-
-- **Public book catalog:** Google Books API
-- **Account authentication:** Firebase Authentication
-- **User database:** Cloud Firestore
-- **Third-party login:** Google Sign-In first, Apple Sign-In afterward if needed
-- **Saved books / reading progress:** `users/{uid}/library/{bookId}` in Firestore
-
-See:
-
-- `docs/FIREBASE_DATABASE_DESIGN.md`
-- `docs/NEXT_TECH_PLAN.md`
-- `firebase/firestore.rules`
+Before Firebase is connected, the public frontend can still demonstrate the catalog, shelf, and progress locally in the browser. Account forms are intentionally disabled until a valid Firebase project configuration is present.
