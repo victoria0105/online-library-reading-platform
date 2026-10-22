@@ -1,12 +1,9 @@
-// ReadShelf Firebase web configuration.
-// Replace the placeholder values with the Web App configuration from
-// Firebase Console > Project settings > Your apps > ReadShelf Web.
-// These client-side Firebase config values are identifiers, not admin secrets.
 window.ReadShelfFirebaseConfig = {
-  apiKey: "YOUR_FIREBASE_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_FIREBASE_APP_ID"
+  apiKey: "AIzaSyDIDTnbmqEu421Sh0jmFPii35TWDnmRY6U",
+  authDomain: "readshelf-library.firebaseapp.com",
+  projectId: "readshelf-library",
+  storageBucket: "readshelf-library.firebasestorage.app",
+  messagingSenderId: "216009050019",
+  appId: "1:216009050019:web:74c15215d2a635d98cfc16",
+  measurementId: "G-XYNGN9NW6V"
 };
