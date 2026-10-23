@@ -678,3 +678,10 @@ img { max-width: 100%; display: block; }
   .profile-panel { padding: 22px; }
   .auth-form-meta { align-items: flex-start; flex-direction: column; gap: 4px; }
 }
+
+
+/* Ensure elements using the HTML hidden attribute stay hidden.
+   Safari can otherwise show .config-notice because it has display:grid. */
+[hidden] {
+  display: none !important;
+}
