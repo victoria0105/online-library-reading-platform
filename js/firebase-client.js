@@ -73,15 +73,39 @@
     return ref;
   }
 
-  function localBookSnapshot(bookId) {
-    const book = (window.READSHELF_BOOKS || []).find(item => item.id === bookId);
-    if (!book) return { bookId };
+  function resolveBook(bookOrId) {
+    if (bookOrId && typeof bookOrId === "object") return bookOrId;
+    const id = String(bookOrId || "");
+    return window.ReadShelf?.findBook?.(id) ||
+      (window.READSHELF_BOOKS || []).find(item => item.id === id) ||
+      { id, title: "Saved book", author: "Unknown author", genre: "Book", tags: [] };
+  }
+
+  function bookSnapshot(bookOrId) {
+    const book = resolveBook(bookOrId);
+    const bookId = String(book.id || bookOrId || "");
     return {
       bookId,
-      titleSnapshot: book.title || "",
-      authorSnapshot: book.author || "",
-      thumbnailSnapshot: book.thumbnail || "",
-      genreSnapshot: book.genre || ""
+      source: book.source || "local",
+      googleVolumeId: book.googleVolumeId || "",
+      titleSnapshot: String(book.title || "Saved book").slice(0, 300),
+      authorSnapshot: String(book.author || "Unknown author").slice(0, 300),
+      thumbnailSnapshot: String(book.thumbnail || "").slice(0, 1000),
+      genreSnapshot: String(book.genre || "Book").slice(0, 120),
+      tagsSnapshot: Array.isArray(book.tags) ? book.tags.slice(0, 6).map(String) : [],
+      initialsSnapshot: String(book.initials || "").slice(0, 8),
+      coverClassSnapshot: String(book.coverClass || "").slice(0, 80),
+      publishedYearSnapshot: Number(book.year || 0),
+      descriptionSnapshot: String(book.description || "").slice(0, 1800),
+      pagesSnapshot: Number(book.pages || 0),
+      ratingSnapshot: Number(book.rating || 0),
+      languageSnapshot: String(book.language || "").slice(0, 24),
+      webReaderLink: String(book.webReaderLink || "").slice(0, 1500),
+      previewLink: String(book.previewLink || "").slice(0, 1500),
+      infoLink: String(book.infoLink || "").slice(0, 1500),
+      viewability: String(book.viewability || "").slice(0, 40),
+      publicDomain: Boolean(book.publicDomain),
+      embeddable: Boolean(book.embeddable)
     };
   }
 
@@ -141,8 +165,11 @@
     await authMod.sendPasswordResetEmail(auth, email);
   }
 
-  // The public catalog is still bundled locally until Google Books is connected.
   async function fetchBooks() { return []; }
+
+  async function fetchLibrary(uid) {
+    return readLibrary(uid, true);
+  }
 
   async function fetchShelf(uid) {
     const rows = await readLibrary(uid);
@@ -154,15 +181,18 @@
     return Object.fromEntries(rows.map(row => [row.id, Number(row.progressPercent || 0)]));
   }
 
-  async function addToShelf(uid, bookId) {
+  async function addToShelf(uid, bookOrId) {
+    const book = resolveBook(bookOrId);
+    const bookId = String(book.id || bookOrId || "");
     const { db, fsMod } = await services();
     const ref = fsMod.doc(db, "users", uid, "library", bookId);
     const snap = await fsMod.getDoc(ref);
+    const existing = snap.exists() ? snap.data() : {};
     const data = {
-      ...localBookSnapshot(bookId),
-      status: snap.exists() && snap.data().status ? snap.data().status : "want_to_read",
-      progressPercent: snap.exists() ? Number(snap.data().progressPercent || 0) : 0,
-      favorite: snap.exists() ? Boolean(snap.data().favorite) : false,
+      ...bookSnapshot(book),
+      status: existing.status || "want_to_read",
+      progressPercent: Number(existing.progressPercent || 0),
+      favorite: Boolean(existing.favorite),
       updatedAt: fsMod.serverTimestamp()
     };
     if (!snap.exists()) data.savedAt = fsMod.serverTimestamp();
@@ -182,7 +212,7 @@
     const ref = fsMod.doc(db, "users", uid, "library", bookId);
     const snap = await fsMod.getDoc(ref);
     const data = {
-      ...localBookSnapshot(bookId),
+      ...bookSnapshot(bookId),
       progressPercent: percent,
       status: percent >= 100 ? "finished" : percent > 0 ? "reading" : "want_to_read",
       updatedAt: fsMod.serverTimestamp(),
@@ -234,6 +264,7 @@
     signOut,
     sendPasswordReset,
     fetchBooks,
+    fetchLibrary,
     fetchShelf,
     fetchProgress,
     addToShelf,

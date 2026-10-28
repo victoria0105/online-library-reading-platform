@@ -5,7 +5,7 @@
   const STORAGE_PROGRESS = "readshelf:progress";
 
   const state = {
-    books: fallbackBooks,
+    books: [...fallbackBooks],
     shelf: [],
     progress: {},
     session: null,
@@ -13,6 +13,24 @@
     ready: false,
     configured: Boolean(backend?.isConfigured?.())
   };
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function safeUrl(value) {
+    try {
+      const url = new URL(String(value || ""), location.origin);
+      return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+    } catch {
+      return "";
+    }
+  }
 
   function readGuestShelf() {
     try { return JSON.parse(localStorage.getItem(STORAGE_SHELF) || "[]"); }
@@ -32,22 +50,59 @@
     localStorage.setItem(STORAGE_PROGRESS, JSON.stringify(progress));
   }
 
-  function mapDatabaseBook(book) {
+  function initials(title) {
+    return String(title || "Book")
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 3)
+      .map(part => part[0]?.toUpperCase() || "")
+      .join("");
+  }
+
+  function mapLibraryBook(row) {
     return {
-      id: book.id,
-      title: book.title,
-      author: book.author,
-      year: book.published_year,
-      genre: book.genre,
-      tags: book.tags || [],
-      initials: book.initials,
-      coverClass: book.cover_class,
-      description: book.description,
-      pages: book.pages,
-      rating: Number(book.rating || 0),
-      featured: Boolean(book.featured),
-      sample: book.sample_paragraphs || []
+      id: row.bookId || row.id,
+      source: row.source || "firestore",
+      googleVolumeId: row.googleVolumeId || "",
+      title: row.titleSnapshot || "Saved book",
+      author: row.authorSnapshot || "Unknown author",
+      year: Number(row.publishedYearSnapshot || 0) || "",
+      genre: row.genreSnapshot || "Book",
+      tags: Array.isArray(row.tagsSnapshot) ? row.tagsSnapshot : [],
+      initials: row.initialsSnapshot || initials(row.titleSnapshot),
+      coverClass: row.coverClassSnapshot || "",
+      thumbnail: row.thumbnailSnapshot || "",
+      description: row.descriptionSnapshot || "",
+      pages: Number(row.pagesSnapshot || 0),
+      rating: Number(row.ratingSnapshot || 0),
+      language: row.languageSnapshot || "",
+      webReaderLink: row.webReaderLink || "",
+      previewLink: row.previewLink || "",
+      infoLink: row.infoLink || "",
+      viewability: row.viewability || "",
+      publicDomain: Boolean(row.publicDomain),
+      embeddable: Boolean(row.embeddable),
+      sample: []
     };
+  }
+
+  function registerBooks(books) {
+    (books || []).forEach(incoming => {
+      if (!incoming?.id) return;
+      const index = state.books.findIndex(book => book.id === incoming.id);
+      if (index >= 0) {
+        const existing = state.books[index];
+        state.books[index] = {
+          ...existing,
+          ...incoming,
+          tags: incoming.tags?.length ? incoming.tags : (existing.tags || []),
+          sample: incoming.sample?.length ? incoming.sample : (existing.sample || [])
+        };
+      } else {
+        state.books.push(incoming);
+      }
+    });
+    return books || [];
   }
 
   function getShelf() { return [...state.shelf]; }
@@ -69,6 +124,7 @@
 
   async function toggleShelf(id) {
     const exists = state.shelf.includes(id);
+    const book = findBook(id);
 
     if (state.configured) {
       if (!state.user) {
@@ -82,7 +138,7 @@
           await backend.removeFromShelf(state.user.id, id);
           state.shelf = state.shelf.filter(bookId => bookId !== id);
         } else {
-          await backend.addToShelf(state.user.id, id);
+          await backend.addToShelf(state.user.id, book || id);
           state.shelf = [...state.shelf, id];
         }
       } catch (error) {
@@ -130,18 +186,33 @@
 
   function bookCard(book) {
     const saved = state.shelf.includes(book.id);
+    const tags = Array.isArray(book.tags) ? book.tags : [];
+    const thumbnail = safeUrl(book.thumbnail);
+    const cover = thumbnail
+      ? `<img src="${escapeHtml(thumbnail)}" alt="Cover of ${escapeHtml(book.title)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;">`
+      : `<span>${escapeHtml(book.initials || initials(book.title))}</span>`;
+
+    const isGoogleBook = book.source === "google" || String(book.id).startsWith("google:");
+    const readerLink = `reader.html?id=${encodeURIComponent(book.id)}`;
+    const externalReader = safeUrl(book.webReaderLink || book.previewLink);
+    const primaryAction = isGoogleBook
+      ? (externalReader
+          ? `<a class="btn btn-primary btn-small" href="${escapeHtml(externalReader)}" target="_blank" rel="noopener">${book.viewability === "ALL_PAGES" ? "Read" : "Preview"} ↗</a>`
+          : `<a class="btn btn-primary btn-small" href="book.html?id=${encodeURIComponent(book.id)}">Details</a>`)
+      : `<a class="btn btn-primary btn-small" href="${readerLink}">Read</a>`;
+
     return `
-      <article class="book-card" data-book-id="${book.id}">
-        <a class="book-cover ${book.coverClass}" href="book.html?id=${encodeURIComponent(book.id)}" aria-label="View ${book.title}">
-          <span>${book.initials}</span>
+      <article class="book-card" data-book-id="${escapeHtml(book.id)}">
+        <a class="book-cover ${escapeHtml(book.coverClass || "")}" href="book.html?id=${encodeURIComponent(book.id)}" aria-label="View ${escapeHtml(book.title)}">
+          ${cover}
         </a>
         <div class="book-card-body">
-          <p class="book-kicker">${book.tags.join(" · ")}</p>
-          <h3><a href="book.html?id=${encodeURIComponent(book.id)}">${book.title}</a></h3>
-          <p class="book-author">${book.author}</p>
+          <p class="book-kicker">${escapeHtml(tags.join(" · ") || book.genre || "Book")}</p>
+          <h3><a href="book.html?id=${encodeURIComponent(book.id)}">${escapeHtml(book.title)}</a></h3>
+          <p class="book-author">${escapeHtml(book.author || "Unknown author")}</p>
           <div class="book-card-actions">
-            <a class="btn btn-primary btn-small" href="reader.html?id=${encodeURIComponent(book.id)}">Read</a>
-            <button class="icon-btn js-shelf-button ${saved ? "is-saved" : ""}" type="button" data-book-id="${book.id}" aria-label="${saved ? "Remove" : "Add"} ${book.title} ${saved ? "from" : "to"} My Shelf" aria-pressed="${saved}">${saved ? "✓" : "+"}</button>
+            ${primaryAction}
+            <button class="icon-btn js-shelf-button ${saved ? "is-saved" : ""}" type="button" data-book-id="${escapeHtml(book.id)}" aria-label="${saved ? "Remove" : "Add"} ${escapeHtml(book.title)} ${saved ? "from" : "to"} My Shelf" aria-pressed="${saved}">${saved ? "✓" : "+"}</button>
           </div>
         </div>
       </article>`;
@@ -186,7 +257,7 @@
       if (state.user) {
         const email = state.user.email || "Account";
         const label = state.user.displayName || email;
-        container.innerHTML = `<a class="user-chip" href="profile.html" title="${email}">${label}</a><button class="btn btn-secondary" type="button" data-signout>Sign out</button>${menu}`;
+        container.innerHTML = `<a class="user-chip" href="profile.html" title="${escapeHtml(email)}">${escapeHtml(label)}</a><button class="btn btn-secondary" type="button" data-signout>Sign out</button>${menu}`;
       } else {
         container.innerHTML = `<a class="btn btn-secondary" href="signin.html">Sign in</a><a class="btn btn-primary" href="signin.html?mode=signup">Create account</a>${menu}`;
       }
@@ -226,20 +297,13 @@
         state.session = await backend.getSession();
         state.user = state.session?.user || null;
 
-        try {
-          const dbBooks = await backend.fetchBooks();
-          if (dbBooks.length) state.books = dbBooks.map(mapDatabaseBook);
-        } catch (bookError) {
-          console.warn("ReadShelf: using bundled book data because the database catalog could not be loaded.", bookError);
-        }
-
         if (state.user) {
-          const [shelf, progress] = await Promise.all([
-            backend.fetchShelf(state.user.id),
-            backend.fetchProgress(state.user.id)
-          ]);
-          state.shelf = shelf;
-          state.progress = progress;
+          const library = await backend.fetchLibrary(state.user.id);
+          registerBooks(library.map(mapLibraryBook));
+          state.shelf = library.map(row => row.bookId || row.id);
+          state.progress = Object.fromEntries(
+            library.map(row => [row.bookId || row.id, Number(row.progressPercent || 0)])
+          );
         } else {
           state.shelf = [];
           state.progress = {};
@@ -309,6 +373,7 @@
     toggleShelf,
     setProgress,
     findBook,
+    registerBooks,
     bookCard,
     showToast,
     syncShelfButtons,

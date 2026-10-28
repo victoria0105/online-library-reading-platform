@@ -9,13 +9,21 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == userId;
     }
 
-    // Private ReadShelf profile for the signed-in user.
+    function validLibraryDocument(bookId) {
+      return request.resource.data.bookId == bookId
+        && request.resource.data.progressPercent is number
+        && request.resource.data.progressPercent >= 0
+        && request.resource.data.progressPercent <= 100;
+    }
+
+    // Each profile belongs only to its authenticated Firebase user.
     match /users/{userId} {
       allow create, read, update, delete: if isOwner(userId);
 
-      // Saved books + reading status/progress.
+      // Saved books, Google Books metadata snapshots, status, and progress.
       match /library/{bookId} {
-        allow create, read, update, delete: if isOwner(userId);
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && validLibraryDocument(bookId);
       }
 
       // Reserved for future reading-history/recommendation work.
@@ -24,13 +32,13 @@ service cloud.firestore {
       }
     }
 
-    // Optional public curated lists. Browser clients cannot write them.
+    // Optional public curated content. Browser clients cannot write it.
     match /featuredBooks/{itemId} {
       allow read: if true;
       allow write: if false;
     }
 
-    // Optional public metadata cache. Writes must come from trusted server code.
+    // Optional public book metadata cache. Writes require trusted server code.
     match /bookCache/{bookId} {
       allow read: if true;
       allow write: if false;
