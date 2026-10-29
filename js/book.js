@@ -36,7 +36,13 @@
     const percent = getProgress()[book.id] || 0;
     const saved = getShelf().includes(book.id);
     const isGoogleBook = book.source === "google" || id.startsWith("google:");
-    const readerUrl = safeUrl(book.webReaderLink || book.previewLink);
+    const canRead = book.viewability === "ALL_PAGES";
+    const canPreview = book.viewability === "PARTIAL";
+
+    const readerUrl =
+       canRead || canPreview
+          ? safeUrl(book.webReaderLink || book.previewLink)
+          : "";
     const actionLabel = percent > 0 ? "Continue reading" : "Start reading";
     const tags = (book.tags || []).map(tag => `<span>${escapeHtml(tag)}</span>`).join("");
     const cover = safeUrl(book.thumbnail)
@@ -45,6 +51,7 @@
 
     let availabilityTitle = "Reading access not confirmed";
     let availabilityText = "Google Books did not provide a public reading link for this volume.";
+
     if (!isGoogleBook) {
       availabilityTitle = "Available in ReadShelf prototype";
       availabilityText = "This starter title uses the built-in prototype reader.";
@@ -53,15 +60,33 @@
       availabilityText = book.publicDomain
         ? "Google Books reports this volume as public domain for the current access region."
         : "Google Books reports that all pages are viewable.";
+}     else if (book.viewability === "PARTIAL") {
+      availabilityTitle = "Preview available";
+      availabilityText = "Google Books allows a partial preview of this volume.";
+    } else if (book.viewability === "NO_PAGES") {
+      availabilityTitle = "No public reading access";
+      availabilityText =
+    "Google Books reports no publicly viewable pages for this edition.";
+}
     } else if (book.viewability === "PARTIAL") {
       availabilityTitle = "Preview available";
       availabilityText = "Google Books allows a partial preview of this volume.";
     }
 
     const primaryAction = isGoogleBook
-      ? (readerUrl
-          ? `<a class="btn btn-primary detail-read-btn" href="${escapeHtml(readerUrl)}" target="_blank" rel="noopener">${book.viewability === "ALL_PAGES" ? "Read on Google Books" : "Preview on Google Books"} <span aria-hidden="true">↗</span></a>`
-          : `<button class="btn btn-primary detail-read-btn" type="button" disabled>Reading preview unavailable</button>`)
+  ? (readerUrl
+      ? `<a class="btn btn-primary detail-read-btn"
+            href="${escapeHtml(readerUrl)}"
+            target="_blank"
+            rel="noopener">
+          ${canRead ? "Read on Google Books" : "Preview on Google Books"}
+          <span aria-hidden="true">↗</span>
+        </a>`
+      : `<button class="btn btn-primary detail-read-btn"
+                 type="button"
+                 disabled>
+          Reading preview unavailable
+        </button>`)
       : `<a class="btn btn-primary detail-read-btn" href="reader.html?id=${encodeURIComponent(book.id)}">${actionLabel} <span aria-hidden="true">→</span></a>`;
 
     document.title = `${book.title} — ReadShelf`;
