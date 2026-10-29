@@ -194,10 +194,16 @@
 
     const isGoogleBook = book.source === "google" || String(book.id).startsWith("google:");
     const readerLink = `reader.html?id=${encodeURIComponent(book.id)}`;
-    const externalReader = safeUrl(book.webReaderLink || book.previewLink);
+    const canRead = book.viewability === "ALL_PAGES";
+    const canPreview = book.viewability === "PARTIAL";
+
+    const externalReader =
+      canRead || canPreview
+        ? safeUrl(book.webReaderLink || book.previewLink)
+        : "";
     const primaryAction = isGoogleBook
       ? (externalReader
-          ? `<a class="btn btn-primary btn-small" href="${escapeHtml(externalReader)}" target="_blank" rel="noopener">${book.viewability === "ALL_PAGES" ? "Read" : "Preview"} ↗</a>`
+          ? `<a class="btn btn-primary btn-small" href="${escapeHtml(externalReader)}" target="_blank" rel="noopener">${canRead ? "Read" : "Preview"}↗</a>`
           : `<a class="btn btn-primary btn-small" href="book.html?id=${encodeURIComponent(book.id)}">Details</a>`)
       : `<a class="btn btn-primary btn-small" href="${readerLink}">Read</a>`;
 
