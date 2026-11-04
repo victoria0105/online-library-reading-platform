@@ -1,0 +1,18 @@
+/* Small additions; existing ReadShelf styles are preserved. */
+.book-cover.missing-cover, .detail-cover.missing-cover {
+  background: linear-gradient(140deg, #315a4d, #18382c);
+}
+.book-cover-placeholder { font-size: clamp(2rem, 5vw, 3.3rem); line-height: 1; }
+.catalog-message { grid-column: 1 / -1; color: var(--muted); padding: 10px 0; }
+.readable-only-control {
+  display: inline-flex; align-items: center; gap: 9px; cursor: pointer;
+  color: var(--green); font-size: .92rem; font-weight: 650; margin: 0 0 20px;
+}
+.readable-only-control input { width: 18px; height: 18px; accent-color: var(--green); }
+.catalog-load-more { display: flex; margin: 35px auto 0; }
+.catalog-load-more[hidden] { display: none; }
+.detail-description { white-space: pre-line; }
+@media (max-width: 640px) {
+  .readable-only-control { font-size: .85rem; }
+  .google-info-link { width: 100%; }
+}
