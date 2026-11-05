@@ -6,7 +6,7 @@ window.ReadShelfEbookManifest = [
     "author": "ReadShelf",
     "genre": "Fiction",
     "epubPath": "assets/ebooks/readshelf-demo.epub",
-    "thumbnail": "assets/covers/readshelf-demo.svg",
+    "thumbnail": "assets/covers/readshelf-demo.jpg",
     "sourcePage": "Original ReadShelf demo ebook, created for this project"
   },
   {
@@ -15,7 +15,7 @@ window.ReadShelfEbookManifest = [
     "author": "Jane Austen",
     "genre": "Romance",
     "epubPath": "assets/ebooks/pride-and-prejudice.epub",
-    "thumbnail": "assets/covers/pride-and-prejudice.svg",
+    "thumbnail": "assets/covers/pride-and-prejudice.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -24,7 +24,7 @@ window.ReadShelfEbookManifest = [
     "author": "Jane Austen",
     "genre": "Romance",
     "epubPath": "assets/ebooks/sense-and-sensibility.epub",
-    "thumbnail": "assets/covers/sense-and-sensibility.svg",
+    "thumbnail": "assets/covers/sense-and-sensibility.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -33,7 +33,7 @@ window.ReadShelfEbookManifest = [
     "author": "Jane Austen",
     "genre": "Romance",
     "epubPath": "assets/ebooks/emma.epub",
-    "thumbnail": "assets/covers/emma.svg",
+    "thumbnail": "assets/covers/emma.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -42,7 +42,7 @@ window.ReadShelfEbookManifest = [
     "author": "Jane Austen",
     "genre": "Romance",
     "epubPath": "assets/ebooks/persuasion.epub",
-    "thumbnail": "assets/covers/persuasion.svg",
+    "thumbnail": "assets/covers/persuasion.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -51,7 +51,7 @@ window.ReadShelfEbookManifest = [
     "author": "Mary Shelley",
     "genre": "Science Fiction",
     "epubPath": "assets/ebooks/frankenstein.epub",
-    "thumbnail": "assets/covers/frankenstein.svg",
+    "thumbnail": "assets/covers/frankenstein.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -60,7 +60,7 @@ window.ReadShelfEbookManifest = [
     "author": "Bram Stoker",
     "genre": "Horror",
     "epubPath": "assets/ebooks/dracula.epub",
-    "thumbnail": "assets/covers/dracula.svg",
+    "thumbnail": "assets/covers/dracula.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -69,7 +69,7 @@ window.ReadShelfEbookManifest = [
     "author": "F. Scott Fitzgerald",
     "genre": "Fiction",
     "epubPath": "assets/ebooks/great-gatsby.epub",
-    "thumbnail": "assets/covers/great-gatsby.svg",
+    "thumbnail": "assets/covers/great-gatsby.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -78,7 +78,7 @@ window.ReadShelfEbookManifest = [
     "author": "Oscar Wilde",
     "genre": "Fiction",
     "epubPath": "assets/ebooks/dorian-gray.epub",
-    "thumbnail": "assets/covers/dorian-gray.svg",
+    "thumbnail": "assets/covers/dorian-gray.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -87,7 +87,7 @@ window.ReadShelfEbookManifest = [
     "author": "Arthur Conan Doyle",
     "genre": "Mystery",
     "epubPath": "assets/ebooks/sherlock-holmes.epub",
-    "thumbnail": "assets/covers/sherlock-holmes.svg",
+    "thumbnail": "assets/covers/sherlock-holmes.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -96,7 +96,7 @@ window.ReadShelfEbookManifest = [
     "author": "Lewis Carroll",
     "genre": "Fantasy",
     "epubPath": "assets/ebooks/alice-wonderland.epub",
-    "thumbnail": "assets/covers/alice-wonderland.svg",
+    "thumbnail": "assets/covers/alice-wonderland.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -105,7 +105,7 @@ window.ReadShelfEbookManifest = [
     "author": "Louisa May Alcott",
     "genre": "Fiction",
     "epubPath": "assets/ebooks/little-women.epub",
-    "thumbnail": "assets/covers/little-women.svg",
+    "thumbnail": "assets/covers/little-women.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -114,7 +114,7 @@ window.ReadShelfEbookManifest = [
     "author": "Herman Melville",
     "genre": "Adventure",
     "epubPath": "assets/ebooks/moby-dick.epub",
-    "thumbnail": "assets/covers/moby-dick.svg",
+    "thumbnail": "assets/covers/moby-dick.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -123,7 +123,7 @@ window.ReadShelfEbookManifest = [
     "author": "Charlotte Brontë",
     "genre": "Fiction",
     "epubPath": "assets/ebooks/jane-eyre.epub",
-    "thumbnail": "assets/covers/jane-eyre.svg",
+    "thumbnail": "assets/covers/jane-eyre.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -132,7 +132,7 @@ window.ReadShelfEbookManifest = [
     "author": "Emily Brontë",
     "genre": "Fiction",
     "epubPath": "assets/ebooks/wuthering-heights.epub",
-    "thumbnail": "assets/covers/wuthering-heights.svg",
+    "thumbnail": "assets/covers/wuthering-heights.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -141,7 +141,7 @@ window.ReadShelfEbookManifest = [
     "author": "Robert Louis Stevenson",
     "genre": "Mystery",
     "epubPath": "assets/ebooks/jekyll-hyde.epub",
-    "thumbnail": "assets/covers/jekyll-hyde.svg",
+    "thumbnail": "assets/covers/jekyll-hyde.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -150,7 +150,7 @@ window.ReadShelfEbookManifest = [
     "author": "H. G. Wells",
     "genre": "Science Fiction",
     "epubPath": "assets/ebooks/the-time-machine.epub",
-    "thumbnail": "assets/covers/the-time-machine.svg",
+    "thumbnail": "assets/covers/the-time-machine.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -159,7 +159,7 @@ window.ReadShelfEbookManifest = [
     "author": "H. G. Wells",
     "genre": "Science Fiction",
     "epubPath": "assets/ebooks/war-of-the-worlds.epub",
-    "thumbnail": "assets/covers/war-of-the-worlds.svg",
+    "thumbnail": "assets/covers/war-of-the-worlds.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -168,7 +168,7 @@ window.ReadShelfEbookManifest = [
     "author": "L. Frank Baum",
     "genre": "Fantasy",
     "epubPath": "assets/ebooks/wizard-of-oz.epub",
-    "thumbnail": "assets/covers/wizard-of-oz.svg",
+    "thumbnail": "assets/covers/wizard-of-oz.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -177,7 +177,7 @@ window.ReadShelfEbookManifest = [
     "author": "Charles Dickens",
     "genre": "Fiction",
     "epubPath": "assets/ebooks/christmas-carol.epub",
-    "thumbnail": "assets/covers/christmas-carol.svg",
+    "thumbnail": "assets/covers/christmas-carol.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -186,7 +186,7 @@ window.ReadShelfEbookManifest = [
     "author": "Charles Dickens",
     "genre": "Fiction",
     "epubPath": "assets/ebooks/great-expectations.epub",
-    "thumbnail": "assets/covers/great-expectations.svg",
+    "thumbnail": "assets/covers/great-expectations.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -195,7 +195,7 @@ window.ReadShelfEbookManifest = [
     "author": "Mark Twain",
     "genre": "Adventure",
     "epubPath": "assets/ebooks/huckleberry-finn.epub",
-    "thumbnail": "assets/covers/huckleberry-finn.svg",
+    "thumbnail": "assets/covers/huckleberry-finn.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -204,7 +204,7 @@ window.ReadShelfEbookManifest = [
     "author": "Frances Hodgson Burnett",
     "genre": "Fiction",
     "epubPath": "assets/ebooks/secret-garden.epub",
-    "thumbnail": "assets/covers/secret-garden.svg",
+    "thumbnail": "assets/covers/secret-garden.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -213,7 +213,7 @@ window.ReadShelfEbookManifest = [
     "author": "Jack London",
     "genre": "Adventure",
     "epubPath": "assets/ebooks/call-of-the-wild.epub",
-    "thumbnail": "assets/covers/call-of-the-wild.svg",
+    "thumbnail": "assets/covers/call-of-the-wild.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
@@ -222,7 +222,7 @@ window.ReadShelfEbookManifest = [
     "author": "L. M. Montgomery",
     "genre": "Fiction",
     "epubPath": "assets/ebooks/anne-green-gables.epub",
-    "thumbnail": "assets/covers/anne-green-gables.svg",
+    "thumbnail": "assets/covers/anne-green-gables.jpg",
     "sourcePage": "Installed public-domain EPUB for ReadShelf"
   }
 ];
