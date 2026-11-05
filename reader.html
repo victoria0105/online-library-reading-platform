@@ -1,87 +1,58 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="A distraction-free ReadShelf reading interface with saved progress and reading preferences.">
-  <title>Reader — ReadShelf</title>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Read complete public-domain books on ReadShelf with highlights, notes, bookmarks and automatic progress synchronization.">
+  <title>Read a Book — ReadShelf</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css"><link rel="stylesheet" href="css/epub-reader.css">
 </head>
 <body class="reader-body reader-theme-paper">
   <header class="reader-header">
     <div class="reader-progress-line" aria-hidden="true"><span id="readerProgressLine"></span></div>
     <div class="container reader-header-inner">
-      <a class="reader-back-link" id="readerBackLink" href="browse.html">← <span>Book details</span></a>
-      <div class="reader-header-title">
-        <strong id="readerBookTitle">Book</strong>
-        <span id="readerAuthor">Author</span>
-      </div>
-      <div class="reader-header-actions">
-        <button class="reader-icon-button" id="bookmarkButton" type="button" aria-pressed="false" title="Bookmark this reading position">♡</button>
-        <a class="btn btn-secondary btn-small" href="shelf.html">My Shelf</a>
-      </div>
+      <a class="reader-back-link" id="readerBackLink" href="browse.html">← Book details</a>
+      <div class="reader-header-title"><strong id="readerBookTitle">ReadShelf</strong><span id="readerAuthor">Online reader</span></div>
+      <div class="reader-header-actions"><button id="bookmarkButton" class="reader-icon-button" type="button" title="Bookmark this position" aria-label="Bookmark reading position">♡</button><a href="shelf.html" class="btn btn-secondary btn-small">My Shelf</a></div>
     </div>
   </header>
-
-  <main class="reader-layout">
-    <section class="reader-reading-column">
-      <div class="reader-location-row">
-        <span>Chapter 1</span>
-        <span id="readerLocation">Beginning</span>
+  <main class="reader-layout ebook-layout">
+    <section class="reader-reading-column" aria-label="Book reading area">
+      <div class="reader-location-row"><span id="chapterLabel">Your book</span><span id="readerLocation">Loading…</span></div>
+      <div class="ebook-loading" id="readerStatus" role="status" aria-live="polite">Loading complete book…</div>
+      <div class="ebook-viewer" id="epubViewer" aria-label="Full text of book" tabindex="0" hidden></div>
+      <div class="ebook-selection-bar" id="selectionBar" hidden>
+        <span id="selectedTextPreview" class="ebook-selected-text"></span>
+        <div class="ebook-selection-actions">
+          <label for="highlightColor">Color</label><select id="highlightColor" aria-label="Highlight color"><option value="yellow">Yellow</option><option value="green">Green</option><option value="pink">Pink</option></select>
+          <button class="btn btn-primary btn-small" id="highlightButton" type="button">Save highlight</button>
+        </div>
+        <textarea id="selectionNote" rows="2" placeholder="Optional note about this passage…" aria-label="Note for selected text"></textarea>
+        <button class="btn btn-secondary btn-small" id="cancelSelection" type="button">Cancel</button>
       </div>
-      <article class="reader-page" id="readerText" tabindex="-1"></article>
-      <div class="reader-bottom-nav">
-        <a class="btn btn-secondary" id="backToDetails" href="book.html">← Book details</a>
-        <button class="btn btn-primary" id="markComplete" type="button">Mark as completed</button>
+      <div class="ebook-paging">
+        <button class="btn btn-secondary" id="prevPage" type="button">← Previous</button>
+        <a class="ebook-details-link" id="backToDetails" href="browse.html">Book details</a>
+        <button class="btn btn-primary" id="nextPage" type="button">Next →</button>
       </div>
-      <p class="reader-source-note">ReadShelf will use book-access information from the external books API. Full text, previews, or an external reader link will only be shown when the API says that reading access is available.</p>
+      <p class="reader-source-note" id="readerSourceNote">Complete public-domain texts are stored on ReadShelf. Reading position, highlights and bookmarks sync to your account when signed in.</p>
     </section>
-
-    <aside class="reader-controls" aria-label="Reading settings">
-      <div class="reader-control-header"><div><p class="eyebrow">Reader settings</p><h2>Make it yours</h2></div><span aria-hidden="true">Aa</span></div>
-
-      <div class="control-row">
-        <div class="control-title"><span>Reading progress</span><strong id="progressValue">0%</strong></div>
-        <input id="progressSlider" type="range" min="0" max="100" step="1" value="0" aria-label="Reading progress">
-        <p class="control-helper" id="progressNote">Reading progress status.</p>
-      </div>
-
-      <div class="control-row">
-        <label for="fontSlider"><span>Text size</span><span id="fontSizeValue">20px</span></label>
-        <input id="fontSlider" type="range" min="16" max="30" step="1" value="20">
-      </div>
-
-      <div class="control-row">
-        <label for="lineHeightSlider"><span>Line spacing</span><span id="lineHeightValue">1.9</span></label>
-        <input id="lineHeightSlider" type="range" min="1.5" max="2.2" step="0.1" value="1.9">
-      </div>
-
-      <div class="control-row">
-        <span class="control-label">Font</span>
-        <div class="reader-segmented" role="group" aria-label="Font family">
-          <button class="is-active" type="button" data-font="serif">Serif</button>
-          <button type="button" data-font="sans">Sans</button>
-        </div>
-      </div>
-
-      <div class="control-row">
-        <span class="control-label">Theme</span>
-        <div class="reader-theme-options" role="group" aria-label="Reading theme">
-          <button class="theme-swatch paper is-active" type="button" data-theme="paper" aria-label="Paper theme"></button>
-          <button class="theme-swatch sepia" type="button" data-theme="sepia" aria-label="Sepia theme"></button>
-          <button class="theme-swatch night" type="button" data-theme="night" aria-label="Night theme"></button>
-        </div>
-      </div>
-
-      <div class="reader-shortcut-note"><strong>Future reader integration</strong><span>If Google Books marks a volume as embeddable, this reading area can be replaced by the embedded viewer while ReadShelf keeps the user's progress in Firebase.</span></div>
+    <aside class="reader-controls ebook-sidebar" aria-label="Reading controls">
+      <div class="reader-control-header"><div><p class="eyebrow">ReadShelf</p><h2>Your reading</h2></div><span aria-hidden="true">Aa</span></div>
+      <p class="ebook-sync-label" id="syncStatus" role="status" aria-live="polite">Preparing your book…</p>
+      <div class="control-row"><div class="control-title"><span>Progress saved automatically</span><strong id="progressValue">0%</strong></div><div class="progress-track"><span id="bookProgressFill" style="width:0%"></span></div><p class="control-helper" id="progressNote">Your place is saved as you turn pages.</p></div>
+      <div class="control-row"><label for="tocSelect"><span>Table of contents</span></label><select id="tocSelect" class="field ebook-select" aria-label="Jump to chapter"><option value="">Loading chapters…</option></select></div>
+      <div class="control-row"><label for="fontSlider"><span>Text size</span><span id="fontSizeValue">20px</span></label><input id="fontSlider" type="range" min="16" max="30" step="1" value="20"></div>
+      <div class="control-row"><label for="lineHeightSlider"><span>Line spacing</span><span id="lineHeightValue">1.7</span></label><input id="lineHeightSlider" type="range" min="1.4" max="2.2" step="0.1" value="1.7"></div>
+      <div class="control-row"><span class="control-label">Font</span><div class="reader-segmented"><button class="is-active" type="button" data-font="serif">Serif</button><button type="button" data-font="sans">Sans</button></div></div>
+      <div class="control-row"><span class="control-label">Theme</span><div class="reader-theme-options"><button class="theme-swatch paper is-active" type="button" data-theme="paper" title="Paper" aria-label="Paper theme"></button><button class="theme-swatch sepia" type="button" data-theme="sepia" title="Sepia" aria-label="Sepia theme"></button><button class="theme-swatch night" type="button" data-theme="night" title="Night" aria-label="Night theme"></button></div></div>
+      <div class="control-row"><div class="control-title"><span>Highlights & notes</span><strong id="highlightCount">0</strong></div><div class="ebook-annotation-list" id="highlightsList"><p class="control-helper">Select some text to add a highlight.</p></div></div>
+      <div class="control-row"><div class="control-title"><span>Bookmarks</span><strong id="bookmarkCount">0</strong></div><div class="ebook-annotation-list" id="bookmarksList"><p class="control-helper">Use ♡ at the top to bookmark a page.</p></div></div>
     </aside>
   </main>
-
-  <script src="js/firebase-config.js"></script>
-  <script src="js/firebase-client.js"></script>
-  <script src="js/data.js"></script>
-  <script src="js/app.js"></script>
-  <script src="js/reader.js"></script>
-</body>
-</html>
+  <script src="js/firebase-config.js"></script><script src="js/firebase-client.js"></script>
+  <script src="js/data.js"></script><script src="js/installed-books.js"></script><script src="js/readable-catalog.js"></script><script src="js/app.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://unpkg.com/epubjs@0.3.93/dist/epub.min.js"></script>
+  <script src="js/reading-store.js"></script><script src="js/reader.js"></script>
+</body></html>

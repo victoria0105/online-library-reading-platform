@@ -14,6 +14,7 @@
 
     const params = new URLSearchParams(location.search);
     const starterBooks = [...(window.READSHELF_BOOKS || [])];
+    const hostedBooks = window.ReadShelfEbooks?.all() || [];
     const pageSize = 20;
     let timer;
     let generation = 0;
@@ -94,7 +95,10 @@
       if (!append) {
         generation++;
         offset = 0;
-        resultBooks = [];
+        resultBooks = hostedBooks.filter(book => {
+          const term = input.value.trim().toLowerCase();
+          return !term || `${book.title} ${book.author} ${book.genre}`.toLowerCase().includes(term);
+        });
         exhausted = false;
         render();
       }
@@ -140,9 +144,12 @@
         console.error("Google Books search failed:", error);
         exhausted = true;
         const localQuery = typed.toLowerCase();
-        resultBooks = starterBooks.filter(book =>
+        resultBooks = hostedBooks.length ? hostedBooks.filter(book =>
+          !localQuery || `${book.title} ${book.author} ${book.genre}`.toLowerCase().includes(localQuery)) : starterBooks.filter(book =>
           !localQuery || `${book.title} ${book.author} ${book.genre}`.toLowerCase().includes(localQuery));
-        status.textContent = "Google Books is unavailable right now. Showing the offline starter books instead. Check the Books API configuration if this continues.";
+        status.textContent = hostedBooks.length
+          ? 'Google Books is unavailable; showing complete books hosted by ReadShelf.'
+          : 'Google Books is unavailable. The starter collection is metadata-only until complete EPUBs are installed.';
         render();
       } finally {
         if (token === generation) {

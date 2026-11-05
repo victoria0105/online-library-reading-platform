@@ -13,6 +13,15 @@
     if (!grid) return;
     const { bookCard, registerBooks, syncShelfButtons } = window.ReadShelf;
     const token = ++lastRequest;
+    const hosted = window.ReadShelfEbooks?.all() || [];
+    if (hosted.length >= 8) {
+      registerBooks(hosted);
+      grid.innerHTML = hosted.slice(0, 12).map(bookCard).join('');
+      syncShelfButtons();
+      const helper = grid.closest('.section')?.querySelector('.section-heading p:not(.eyebrow)');
+      if (helper) helper.textContent = 'Complete books you can read and highlight directly on ReadShelf.';
+      return;
+    }
     grid.innerHTML = '<p class="catalog-message">Loading books from Google Books…</p>';
     try {
       const google = window.ReadShelfGoogleBooks;
@@ -38,20 +47,22 @@
       });
       // Better-known titles first where Google supplies actual rating counts.
       unique.sort((a, b) => (b.ratingsCount || 0) - (a.ratingsCount || 0));
-      const shown = unique.slice(0, 12);
-      if (!shown.length) throw new Error("No full-view Google Books editions were returned");
+      const availableHosted = hosted.slice(0, 12);
+      const shown = [...availableHosted, ...unique.filter(b =>
+        !availableHosted.some(h => window.ReadShelfEbooks?.findForBook(b)?.id === h.id))].slice(0, 12);
+      if (!shown.length) throw new Error('No available books were returned');
       registerBooks(shown);
-      grid.innerHTML = shown.map(bookCard).join("");
+      grid.innerHTML = shown.map(bookCard).join('');
       syncShelfButtons();
-      const helper = grid.closest(".section")?.querySelector(".section-heading p:not(.eyebrow)");
-      if (helper) helper.textContent = "Live Google Books editions with full-view access. Browse for more.";
+      const helper = grid.closest('.section')?.querySelector('.section-heading p:not(.eyebrow)');
+      if (helper) helper.textContent = 'Read complete books on ReadShelf, or discover other editions through Google Books.';
     } catch (error) {
       console.warn("Unable to load home catalog:", error);
       if (token !== lastRequest) return;
       // Preserve demo accessibility if the Google API is offline/blocked.
-      const fallback = window.READSHELF_BOOKS || [];
-      grid.innerHTML = `<p class="catalog-message">Google Books could not load right now. Showing the offline starter collection.</p>` +
-        fallback.map(bookCard).join("");
+      const fallback = hosted.length ? hosted : (window.READSHELF_BOOKS || []);
+      grid.innerHTML = `<p class="catalog-message">${hosted.length ? 'Showing books hosted by ReadShelf.' : 'Google Books is offline; showing starter titles (full EPUBs not yet installed).'}</p>` +
+        fallback.slice(0,12).map(bookCard).join('');
       syncShelfButtons();
     }
   }

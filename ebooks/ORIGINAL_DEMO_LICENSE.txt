@@ -1,0 +1,5 @@
+The ReadShelf Reader: An Original Demonstration
+The short demonstration ebook and its source generated for this ReadShelf
+prototype can be copied, modified, redistributed and hosted freely. It was
+created specifically to test reader controls and does not include passages
+from third-party copyrighted books.
