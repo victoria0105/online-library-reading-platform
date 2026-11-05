@@ -1,0 +1,84 @@
+ReadShelf Full-Book Reader — November 2026
+=========================================
+
+THIS IS A PATCH PACKAGE, NOT A COMPLETE COPY OF YOUR WEBSITE.
+Apply it over your EXISTING online-library-reading-platform repository.
+It includes all changes from the earlier ReadShelf Catalog Fixes ZIP.
+Do not replace or delete your existing Firebase settings, book.js,
+js/app.js, js/data.js, or css/styles.css.
+
+WHAT YOU GET
+* A new in-site EPUB reader on reader.html, with chapter navigation,
+  page turning, font/theme controls, CFI reading position, text highlighting,
+  notes, and bookmarks.
+* Guest state in localStorage and signed-in state in Firebase Firestore.
+* Progress also updates My Shelf using your existing Firebase code.
+* Google Books still powers discovery; when an installed public-domain
+  edition matches, the action switches to "Read on ReadShelf".
+* A built-in original 3-chapter EPUB demo for testing all features immediately.
+* A curated manifest of 24 classic ebook candidates and a one-time installer
+  that retrieves VALID compatible EPUB files from Standard Ebooks.
+
+IMPORTANT: The 24 classics are NOT included in this ZIP. The installer must
+successfully download them (or you must add compatible EPUBs manually) before
+they will show as full books on the live website. The bundled original demo
+is the only readable EPUB before this step. No fake full-text claims.
+
+INSTALLATION — MAC / GITHUB DESKTOP
+1. Back up or commit your current ReadShelf repository.
+2. Unzip this package into the ROOT of your local repository, preserving
+   the directory names. Allow matching files to be replaced.
+3. Open Terminal in your ReadShelf repository folder.
+4. Run:  python3 scripts/install_ebooks.py --limit 24
+   (If some publishers' links are unavailable, the script skips those files;
+    it prints the exact number that were installed.)
+5. Check that js/installed-books.js now lists the installed titles and
+   assets/ebooks/ contains their .epub files.
+6. Commit ALL added/changed files in GitHub Desktop, including the .epub
+   files (individual files must fit your GitHub limits), and Push to main.
+7. Vercel should redeploy automatically.
+8. Open https://myreadshelf.vercel.app/reader.html?id=readshelf-demo
+   to test the reader even if no external books could download.
+
+IF THE AUTOMATIC DOWNLOAD CANNOT RUN
+Go to the Standard Ebooks source page for the selected book and download the
+"Compatible epub" file manually. Save it in assets/ebooks/ with the filename
+from ebooks/catalog.json. Then run:
+  python3 scripts/install_ebooks.py --verify-only
+This script verifies all files, and generates a manifest listing ONLY files
+that exist and are valid EPUB archives.
+
+FIRESTORE RULES
+Your repository's existing firebase/firestore.rules already includes:
+  /users/{uid}/readingSessions/{sessionId}
+with access limited to the account owner. Ensure those rules have actually
+been PUBLISHED in Firebase Console; otherwise notes/bookmarks stay local.
+No new Firebase service or account is required.
+
+TEST CHECKLIST
+[ ] Demo EPUB opens in the website rather than Google Books.
+[ ] Turn a page, reload, and return to the same reading location.
+[ ] Select text, choose a color, add a note, and save the highlight.
+[ ] Click a saved highlight to jump to its passage; delete it.
+[ ] Bookmark a page, close the book, reopen it, and jump back.
+[ ] Sign in and repeat on a second device; verify cloud sync.
+[ ] Confirm My Shelf shows a nonzero reading percentage after navigating.
+[ ] Confirm Harry Potter only has its licensed Google Books options.
+[ ] Confirm no book missing its EPUB displays "Read on ReadShelf".
+
+NOTE ABOUT COPYRIGHT
+Only self-host ebooks you have legal rights to distribute. Standard Ebooks
+believes these selected works are free from U.S. copyright restrictions;
+other countries' laws can differ. Keep credit to the ebook provider and
+review each edition and cover art before wider release. Do not upload
+DRM-protected or copyrighted commercial books without licenses.
+
+NOTE ABOUT LIBRARIES
+The reader loads EPUB.js 0.3.93 and JSZip 3.10.1 from public CDNs. For
+reliable production/offline use, download their distribution JS assets and
+update reader.html to use locally hosted copies. The complete book EPUBs
+are always served from your own ReadShelf domain.
+
+Limitations of this version: no DRM, no book uploads by ordinary users,
+no annotation export, no highlighting on restricted Google Books previews.
+Signed-in cloud sync requires Firebase Firestore permissions and network.
