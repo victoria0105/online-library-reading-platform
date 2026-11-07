@@ -1145,45 +1145,35 @@
         nav.toc
       );
 
+      /*
+        If the user has a saved reading location,
+        resume from that location.
+
+        Otherwise open the actual first EPUB page
+        so the cover/title/front matter can appear.
+      */
       let startTarget =
         state.cfi || '';
 
+      if (!startTarget) {
+        const firstSpineItem =
+          epub.spine
+            ?.spineItems?.[0];
+
+        startTarget =
+          firstSpineItem
+            ?.href || '';
+      }
+
+      /*
+        Fallback if the EPUB does not expose
+        the first spine item correctly.
+      */
       if (!startTarget) {
         startTarget =
           findFirstReadableChapter(
             nav.toc
           );
-      }
-
-      if (
-        !startTarget &&
-        epub.spine
-          ?.spineItems
-          ?.length
-      ) {
-        const skipFrontMatter =
-          /cover|titlepage|title-page|imprint|copyright|uncopyright|colophon|toc|contents/i;
-
-        const firstReadableSpineItem =
-          epub.spine.spineItems
-            .find(item => {
-              const href =
-                String(
-                  item.href ||
-                  ''
-                );
-
-              return (
-                href &&
-                !skipFrontMatter.test(
-                  href
-                )
-              );
-            });
-
-        startTarget =
-          firstReadableSpineItem
-            ?.href || '';
       }
 
       restorePending = true;
@@ -1197,18 +1187,25 @@
         restorePending = false;
       }
 
-      const firstChapter =
-        findFirstReadableChapter(
-          nav.toc
-        );
+      /*
+        Some EPUB files contain a genuinely blank
+        front page.
 
+        Keep image-only cover pages, SVG covers,
+        title artwork, and picture elements.
+
+        Only skip forward if the page contains
+        practically no text AND no visual content.
+      */
       try {
+        const contents =
+          rendition.getContents();
+
         const visibleText =
-          rendition
-            .getContents()
+          contents
             .map(
-              contents =>
-                contents.document
+              content =>
+                content.document
                   ?.body
                   ?.innerText ||
                 ''
@@ -1220,14 +1217,32 @@
             )
             .trim();
 
+        const hasVisualContent =
+          contents.some(
+            content =>
+              Boolean(
+                content.document
+                  ?.querySelector(
+                    'img, svg, image, picture'
+                  )
+              )
+          );
+
         if (
           visibleText.length <
             20 &&
-          firstChapter
+          !hasVisualContent
         ) {
-          await rendition.display(
-            firstChapter
-          );
+          const firstChapter =
+            findFirstReadableChapter(
+              nav.toc
+            );
+
+          if (firstChapter) {
+            await rendition.display(
+              firstChapter
+            );
+          }
         }
       } catch (error) {
         console.warn(
