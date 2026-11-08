@@ -33,21 +33,37 @@
   }
 
   function readGuestShelf() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_SHELF) || "[]"); }
-    catch { return []; }
+    try {
+      return JSON.parse(
+        localStorage.getItem(STORAGE_SHELF) || "[]"
+      );
+    } catch {
+      return [];
+    }
   }
 
   function readGuestProgress() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_PROGRESS) || "{}"); }
-    catch { return {}; }
+    try {
+      return JSON.parse(
+        localStorage.getItem(STORAGE_PROGRESS) || "{}"
+      );
+    } catch {
+      return {};
+    }
   }
 
   function saveGuestShelf(ids) {
-    localStorage.setItem(STORAGE_SHELF, JSON.stringify([...new Set(ids)]));
+    localStorage.setItem(
+      STORAGE_SHELF,
+      JSON.stringify([...new Set(ids)])
+    );
   }
 
   function saveGuestProgress(progress) {
-    localStorage.setItem(STORAGE_PROGRESS, JSON.stringify(progress));
+    localStorage.setItem(
+      STORAGE_PROGRESS,
+      JSON.stringify(progress)
+    );
   }
 
   function initials(title) {
@@ -66,310 +82,1087 @@
       googleVolumeId: row.googleVolumeId || "",
       title: row.titleSnapshot || "Saved book",
       author: row.authorSnapshot || "Unknown author",
-      year: Number(row.publishedYearSnapshot || 0) || "",
-      genre: row.genreSnapshot || "Book",
-      tags: Array.isArray(row.tagsSnapshot) ? row.tagsSnapshot : [],
-      initials: row.initialsSnapshot || initials(row.titleSnapshot),
-      coverClass: row.coverClassSnapshot || "",
-      thumbnail: row.thumbnailSnapshot || "",
-      description: row.descriptionSnapshot || "",
-      pages: Number(row.pagesSnapshot || 0),
-      rating: Number(row.ratingSnapshot || 0),
-      language: row.languageSnapshot || "",
-      webReaderLink: row.webReaderLink || "",
-      previewLink: row.previewLink || "",
-      infoLink: row.infoLink || "",
-      viewability: row.viewability || "",
-      publicDomain: Boolean(row.publicDomain),
-      embeddable: Boolean(row.embeddable),
+      year:
+        Number(
+          row.publishedYearSnapshot || 0
+        ) || "",
+      genre:
+        row.genreSnapshot || "Book",
+      tags:
+        Array.isArray(row.tagsSnapshot)
+          ? row.tagsSnapshot
+          : [],
+      initials:
+        row.initialsSnapshot ||
+        initials(row.titleSnapshot),
+      coverClass:
+        row.coverClassSnapshot || "",
+      thumbnail:
+        row.thumbnailSnapshot || "",
+      description:
+        row.descriptionSnapshot || "",
+      pages:
+        Number(
+          row.pagesSnapshot || 0
+        ),
+      rating:
+        Number(
+          row.ratingSnapshot || 0
+        ),
+      language:
+        row.languageSnapshot || "",
+      webReaderLink:
+        row.webReaderLink || "",
+      previewLink:
+        row.previewLink || "",
+      infoLink:
+        row.infoLink || "",
+      viewability:
+        row.viewability || "",
+      publicDomain:
+        Boolean(
+          row.publicDomain
+        ),
+      embeddable:
+        Boolean(
+          row.embeddable
+        ),
       sample: []
     };
   }
 
+  /*
+    IMPORTANT:
+
+    Firestore contains saved snapshots of books.
+
+    Some older saved books were stored before
+    year, pages, language, and full descriptions
+    were added.
+
+    For locally installed ReadShelf EPUB books,
+    the current installed catalog should be the
+    source of truth for metadata.
+
+    Firestore should keep shelf/progress data,
+    but it should NOT replace current metadata
+    with old blank values.
+  */
   function registerBooks(books) {
     (books || []).forEach(incoming => {
-      if (!incoming?.id) return;
-      const index = state.books.findIndex(book => book.id === incoming.id);
+      if (!incoming?.id) {
+        return;
+      }
+
+      const index =
+        state.books.findIndex(
+          book =>
+            book.id ===
+            incoming.id
+        );
+
       if (index >= 0) {
-        const existing = state.books[index];
-        state.books[index] = {
-          ...existing,
-          ...incoming,
-          tags: incoming.tags?.length ? incoming.tags : (existing.tags || []),
-          sample: incoming.sample?.length ? incoming.sample : (existing.sample || [])
-        };
+        const existing =
+          state.books[index];
+
+        const installedBook =
+          existing.availableOnReadShelf ===
+            true ||
+          Boolean(
+            window.ReadShelfEbooks
+              ?.findById?.(
+                existing.id
+              )
+          );
+
+        if (installedBook) {
+          /*
+            Start with Firestore data so any
+            user-related snapshot values remain
+            available.
+
+            Then place the current installed-book
+            metadata on top so it wins.
+          */
+          state.books[index] = {
+            ...incoming,
+            ...existing,
+
+            /*
+              Preserve current catalog metadata
+              whenever it exists.
+            */
+            title:
+              existing.title ||
+              incoming.title,
+
+            author:
+              existing.author ||
+              incoming.author,
+
+            year:
+              existing.year ||
+              incoming.year ||
+              "",
+
+            genre:
+              existing.genre ||
+              incoming.genre ||
+              "Book",
+
+            pages:
+              existing.pages ||
+              incoming.pages ||
+              0,
+
+            language:
+              existing.language ||
+              incoming.language ||
+              "English",
+
+            description:
+              existing.description ||
+              incoming.description ||
+              "",
+
+            thumbnail:
+              existing.thumbnail ||
+              incoming.thumbnail ||
+              "",
+
+            coverClass:
+              existing.coverClass ||
+              incoming.coverClass ||
+              "",
+
+            rating:
+              existing.rating ||
+              incoming.rating ||
+              0,
+
+            tags:
+              existing.tags?.length
+                ? existing.tags
+                : incoming.tags || [],
+
+            sample:
+              existing.sample?.length
+                ? existing.sample
+                : incoming.sample || []
+          };
+        } else {
+          /*
+            For Google Books or books that do not
+            belong to the installed ReadShelf
+            collection, allow Firestore metadata
+            to update the existing object.
+          */
+          state.books[index] = {
+            ...existing,
+            ...incoming,
+
+            tags:
+              incoming.tags?.length
+                ? incoming.tags
+                : existing.tags || [],
+
+            sample:
+              incoming.sample?.length
+                ? incoming.sample
+                : existing.sample || []
+          };
+        }
       } else {
-        state.books.push(incoming);
+        state.books.push(
+          incoming
+        );
       }
     });
+
     return books || [];
   }
 
-  function getShelf() { return [...state.shelf]; }
-  function getProgress() { return { ...state.progress }; }
-  function getUser() { return state.user; }
-  function getSession() { return state.session; }
-  function isConfigured() { return state.configured; }
-  function isReady() { return state.ready; }
-  function findBook(id) { return state.books.find(book => book.id === id); }
+  function getShelf() {
+    return [...state.shelf];
+  }
+
+  function getProgress() {
+    return {
+      ...state.progress
+    };
+  }
+
+  function getUser() {
+    return state.user;
+  }
+
+  function getSession() {
+    return state.session;
+  }
+
+  function isConfigured() {
+    return state.configured;
+  }
+
+  function isReady() {
+    return state.ready;
+  }
+
+  function findBook(id) {
+    return state.books.find(
+      book =>
+        book.id === id
+    );
+  }
 
   function currentReturnTarget() {
-    const file = location.pathname.split("/").pop() || "index.html";
+    const file =
+      location.pathname
+        .split("/")
+        .pop() ||
+      "index.html";
+
     return `${file}${location.search}${location.hash}`;
   }
 
   function goToSignIn() {
-    location.href = `signin.html?next=${encodeURIComponent(currentReturnTarget())}`;
+    location.href =
+      `signin.html?next=${encodeURIComponent(
+        currentReturnTarget()
+      )}`;
   }
 
   async function toggleShelf(id) {
-    const exists = state.shelf.includes(id);
-    const book = findBook(id);
+    const exists =
+      state.shelf.includes(id);
+
+    const book =
+      findBook(id);
 
     if (state.configured) {
       if (!state.user) {
-        showToast("Sign in to save books to your shelf");
-        setTimeout(goToSignIn, 650);
+        showToast(
+          "Sign in to save books to your shelf"
+        );
+
+        setTimeout(
+          goToSignIn,
+          650
+        );
+
         return false;
       }
 
       try {
         if (exists) {
-          await backend.removeFromShelf(state.user.id, id);
-          state.shelf = state.shelf.filter(bookId => bookId !== id);
+          await backend.removeFromShelf(
+            state.user.id,
+            id
+          );
+
+          state.shelf =
+            state.shelf.filter(
+              bookId =>
+                bookId !== id
+            );
         } else {
-          await backend.addToShelf(state.user.id, book || id);
-          state.shelf = [...state.shelf, id];
+          await backend.addToShelf(
+            state.user.id,
+            book || id
+          );
+
+          state.shelf = [
+            ...state.shelf,
+            id
+          ];
         }
       } catch (error) {
         console.error(error);
-        showToast("Could not update your shelf");
+
+        showToast(
+          "Could not update your shelf"
+        );
+
         return false;
       }
     } else {
-      state.shelf = exists ? state.shelf.filter(bookId => bookId !== id) : [...state.shelf, id];
-      saveGuestShelf(state.shelf);
+      state.shelf =
+        exists
+          ? state.shelf.filter(
+              bookId =>
+                bookId !== id
+            )
+          : [
+              ...state.shelf,
+              id
+            ];
+
+      saveGuestShelf(
+        state.shelf
+      );
     }
 
     updateShelfCount();
     syncShelfButtons();
-    showToast(exists ? "Removed from My Shelf" : "Added to My Shelf");
-    window.dispatchEvent(new CustomEvent("readshelf:shelfchange", { detail: { shelf: getShelf() } }));
+
+    showToast(
+      exists
+        ? "Removed from My Shelf"
+        : "Added to My Shelf"
+    );
+
+    window.dispatchEvent(
+      new CustomEvent(
+        "readshelf:shelfchange",
+        {
+          detail: {
+            shelf:
+              getShelf()
+          }
+        }
+      )
+    );
+
     return true;
   }
 
-  async function setProgress(id, percent) {
-    const value = Math.max(0, Math.min(100, Math.round(Number(percent) || 0)));
+  async function setProgress(
+    id,
+    percent
+  ) {
+    const value =
+      Math.max(
+        0,
+        Math.min(
+          100,
+          Math.round(
+            Number(percent) ||
+            0
+          )
+        )
+      );
 
     if (state.configured) {
       if (!state.user) {
-        showToast("Sign in to sync your reading progress");
+        showToast(
+          "Sign in to sync your reading progress"
+        );
+
         return false;
       }
+
       try {
-        await backend.saveProgress(state.user.id, id, value);
+        await backend.saveProgress(
+          state.user.id,
+          id,
+          value
+        );
       } catch (error) {
         console.error(error);
-        showToast("Could not save reading progress");
+
+        showToast(
+          "Could not save reading progress"
+        );
+
         return false;
       }
     } else {
-      const guest = readGuestProgress();
-      guest[id] = value;
-      saveGuestProgress(guest);
+      const guest =
+        readGuestProgress();
+
+      guest[id] =
+        value;
+
+      saveGuestProgress(
+        guest
+      );
     }
 
-    state.progress[id] = value;
-    window.dispatchEvent(new CustomEvent("readshelf:progresschange", { detail: { bookId: id, progress: value } }));
+    state.progress[id] =
+      value;
+
+    window.dispatchEvent(
+      new CustomEvent(
+        "readshelf:progresschange",
+        {
+          detail: {
+            bookId: id,
+            progress:
+              value
+          }
+        }
+      )
+    );
+
     return true;
   }
 
   function bookCard(book) {
-    const saved = state.shelf.includes(book.id);
-    const tags = Array.isArray(book.tags) ? book.tags : [];
-    const thumbnail = safeUrl(book.thumbnail);
-    const cover = thumbnail
-      ? `<img src="${escapeHtml(thumbnail)}" alt="Cover of ${escapeHtml(book.title)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;">`
-      : `<span>${escapeHtml(book.initials || initials(book.title))}</span>`;
+    const saved =
+      state.shelf.includes(
+        book.id
+      );
 
-    const isGoogleBook = book.source === "google" || String(book.id).startsWith("google:");
-    const readerLink = `reader.html?id=${encodeURIComponent(book.id)}`;
-    const canRead = book.viewability === "ALL_PAGES";
-    const canPreview = book.viewability === "PARTIAL";
+    const tags =
+      Array.isArray(
+        book.tags
+      )
+        ? book.tags
+        : [];
+
+    const thumbnail =
+      safeUrl(
+        book.thumbnail
+      );
+
+    const cover =
+      thumbnail
+        ? `
+          <img
+            src="${escapeHtml(thumbnail)}"
+            alt="Cover of ${escapeHtml(
+              book.title
+            )}"
+            loading="lazy"
+            style="
+              width:100%;
+              height:100%;
+              object-fit:cover;
+              display:block;
+            "
+          >
+        `
+        : `
+          <span>
+            ${escapeHtml(
+              book.initials ||
+              initials(
+                book.title
+              )
+            )}
+          </span>
+        `;
+
+    const isGoogleBook =
+      book.source ===
+        "google" ||
+      String(
+        book.id
+      ).startsWith(
+        "google:"
+      );
+
+    const readerLink =
+      `reader.html?id=${encodeURIComponent(
+        book.id
+      )}`;
+
+    const canRead =
+      book.viewability ===
+      "ALL_PAGES";
+
+    const canPreview =
+      book.viewability ===
+      "PARTIAL";
 
     const externalReader =
-      canRead || canPreview
-        ? safeUrl(book.webReaderLink || book.previewLink)
+      canRead ||
+      canPreview
+        ? safeUrl(
+            book.webReaderLink ||
+            book.previewLink
+          )
         : "";
-    const primaryAction = isGoogleBook
-      ? (externalReader
-          ? `<a class="btn btn-primary btn-small" href="${escapeHtml(externalReader)}" target="_blank" rel="noopener">${canRead ? "Read" : "Preview"}↗</a>`
-          : `<a class="btn btn-primary btn-small" href="book.html?id=${encodeURIComponent(book.id)}">Details</a>`)
-      : `<a class="btn btn-primary btn-small" href="${readerLink}">Read</a>`;
+
+    const primaryAction =
+      isGoogleBook
+        ? (
+            externalReader
+              ? `
+                <a
+                  class="btn btn-primary btn-small"
+                  href="${escapeHtml(
+                    externalReader
+                  )}"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  ${
+                    canRead
+                      ? "Read"
+                      : "Preview"
+                  } ↗
+                </a>
+              `
+              : `
+                <a
+                  class="btn btn-primary btn-small"
+                  href="book.html?id=${encodeURIComponent(
+                    book.id
+                  )}"
+                >
+                  Details
+                </a>
+              `
+          )
+        : `
+          <a
+            class="btn btn-primary btn-small"
+            href="${readerLink}"
+          >
+            Read
+          </a>
+        `;
 
     return `
-      <article class="book-card" data-book-id="${escapeHtml(book.id)}">
-        <a class="book-cover ${escapeHtml(book.coverClass || "")}" href="book.html?id=${encodeURIComponent(book.id)}" aria-label="View ${escapeHtml(book.title)}">
+      <article
+        class="book-card"
+        data-book-id="${escapeHtml(
+          book.id
+        )}"
+      >
+
+        <a
+          class="book-cover ${escapeHtml(
+            book.coverClass ||
+            ""
+          )}"
+          href="book.html?id=${encodeURIComponent(
+            book.id
+          )}"
+          aria-label="View ${escapeHtml(
+            book.title
+          )}"
+        >
           ${cover}
         </a>
+
         <div class="book-card-body">
-          <p class="book-kicker">${escapeHtml(tags.join(" · ") || book.genre || "Book")}</p>
-          <h3><a href="book.html?id=${encodeURIComponent(book.id)}">${escapeHtml(book.title)}</a></h3>
-          <p class="book-author">${escapeHtml(book.author || "Unknown author")}</p>
+
+          <p class="book-kicker">
+            ${escapeHtml(
+              tags.join(
+                " · "
+              ) ||
+              book.genre ||
+              "Book"
+            )}
+          </p>
+
+          <h3>
+            <a
+              href="book.html?id=${encodeURIComponent(
+                book.id
+              )}"
+            >
+              ${escapeHtml(
+                book.title
+              )}
+            </a>
+          </h3>
+
+          <p class="book-author">
+            ${escapeHtml(
+              book.author ||
+              "Unknown author"
+            )}
+          </p>
+
           <div class="book-card-actions">
+
             ${primaryAction}
-            <button class="icon-btn js-shelf-button ${saved ? "is-saved" : ""}" type="button" data-book-id="${escapeHtml(book.id)}" aria-label="${saved ? "Remove" : "Add"} ${escapeHtml(book.title)} ${saved ? "from" : "to"} My Shelf" aria-pressed="${saved}">${saved ? "✓" : "+"}</button>
+
+            <button
+              class="icon-btn js-shelf-button ${
+                saved
+                  ? "is-saved"
+                  : ""
+              }"
+              type="button"
+              data-book-id="${escapeHtml(
+                book.id
+              )}"
+              aria-label="${
+                saved
+                  ? "Remove"
+                  : "Add"
+              } ${escapeHtml(
+                book.title
+              )} ${
+                saved
+                  ? "from"
+                  : "to"
+              } My Shelf"
+              aria-pressed="${saved}"
+            >
+              ${
+                saved
+                  ? "✓"
+                  : "+"
+              }
+            </button>
+
           </div>
+
         </div>
-      </article>`;
+
+      </article>
+    `;
   }
 
   function updateShelfCount() {
-    document.querySelectorAll("[data-shelf-count]").forEach(el => {
-      el.textContent = state.shelf.length;
-    });
+    document
+      .querySelectorAll(
+        "[data-shelf-count]"
+      )
+      .forEach(el => {
+        el.textContent =
+          state.shelf.length;
+      });
   }
 
   function syncShelfButtons() {
-    document.querySelectorAll(".js-shelf-button").forEach(button => {
-      const saved = state.shelf.includes(button.dataset.bookId);
-      button.classList.toggle("is-saved", saved);
-      button.setAttribute("aria-pressed", String(saved));
-      if (button.classList.contains("btn")) {
-        button.textContent = saved ? "✓ Saved to shelf" : "+ Add to My Shelf";
-      } else {
-        button.textContent = saved ? "✓" : "+";
-      }
-    });
+    document
+      .querySelectorAll(
+        ".js-shelf-button"
+      )
+      .forEach(button => {
+        const saved =
+          state.shelf.includes(
+            button.dataset
+              .bookId
+          );
+
+        button.classList.toggle(
+          "is-saved",
+          saved
+        );
+
+        button.setAttribute(
+          "aria-pressed",
+          String(saved)
+        );
+
+        if (
+          button.classList.contains(
+            "btn"
+          )
+        ) {
+          button.textContent =
+            saved
+              ? "✓ Saved to shelf"
+              : "+ Add to My Shelf";
+        } else {
+          button.textContent =
+            saved
+              ? "✓"
+              : "+";
+        }
+      });
   }
 
   function showToast(message) {
-    let toast = document.querySelector(".toast");
+    let toast =
+      document.querySelector(
+        ".toast"
+      );
+
     if (!toast) {
-      toast = document.createElement("div");
-      toast.className = "toast";
-      toast.setAttribute("role", "status");
-      document.body.appendChild(toast);
+      toast =
+        document.createElement(
+          "div"
+        );
+
+      toast.className =
+        "toast";
+
+      toast.setAttribute(
+        "role",
+        "status"
+      );
+
+      document.body.appendChild(
+        toast
+      );
     }
-    toast.textContent = message;
-    toast.classList.add("show");
-    clearTimeout(window.__readShelfToast);
-    window.__readShelfToast = setTimeout(() => toast.classList.remove("show"), 1800);
+
+    toast.textContent =
+      message;
+
+    toast.classList.add(
+      "show"
+    );
+
+    clearTimeout(
+      window.__readShelfToast
+    );
+
+    window.__readShelfToast =
+      setTimeout(
+        () =>
+          toast.classList.remove(
+            "show"
+          ),
+        1800
+      );
   }
 
   function renderAuthControls() {
-    document.querySelectorAll(".nav-actions").forEach(container => {
-      const menu = '<button class="mobile-menu" data-menu-toggle aria-expanded="false" aria-label="Open menu">☰</button>';
-      if (state.user) {
-        const email = state.user.email || "Account";
-        const label = state.user.displayName || email;
-        container.innerHTML = `<a class="user-chip" href="profile.html" title="${escapeHtml(email)}">${escapeHtml(label)}</a><button class="btn btn-secondary" type="button" data-signout>Sign out</button>${menu}`;
-      } else {
-        container.innerHTML = `<a class="btn btn-secondary" href="signin.html">Sign in</a><a class="btn btn-primary" href="signin.html?mode=signup">Create account</a>${menu}`;
-      }
-    });
+    document
+      .querySelectorAll(
+        ".nav-actions"
+      )
+      .forEach(container => {
+        const menu =
+          '<button class="mobile-menu" data-menu-toggle aria-expanded="false" aria-label="Open menu">☰</button>';
 
-    document.querySelectorAll(".mobile-nav").forEach(nav => {
-      nav.querySelectorAll("[data-mobile-auth], a[href^=\"signin.html\"]").forEach(el => el.remove());
-      if (state.user) {
-        const profileItem = document.createElement("a");
-        profileItem.dataset.mobileAuth = "true";
-        profileItem.className = "mobile-auth-link";
-        profileItem.href = "profile.html";
-        profileItem.textContent = "Profile";
-        nav.appendChild(profileItem);
+        if (state.user) {
+          const email =
+            state.user.email ||
+            "Account";
 
-        const signoutItem = document.createElement("button");
-        signoutItem.dataset.mobileAuth = "true";
-        signoutItem.className = "mobile-auth-link";
-        signoutItem.type = "button";
-        signoutItem.dataset.signout = "true";
-        signoutItem.textContent = "Sign out";
-        nav.appendChild(signoutItem);
-      } else {
-        const authItem = document.createElement("a");
-        authItem.dataset.mobileAuth = "true";
-        authItem.className = "mobile-auth-link";
-        authItem.href = "signin.html";
-        authItem.textContent = "Sign in";
-        nav.appendChild(authItem);
-      }
-    });
+          const label =
+            state.user.displayName ||
+            email;
+
+          container.innerHTML =
+            `
+              <a
+                class="user-chip"
+                href="profile.html"
+                title="${escapeHtml(
+                  email
+                )}"
+              >
+                ${escapeHtml(
+                  label
+                )}
+              </a>
+
+              <button
+                class="btn btn-secondary"
+                type="button"
+                data-signout
+              >
+                Sign out
+              </button>
+
+              ${menu}
+            `;
+        } else {
+          container.innerHTML =
+            `
+              <a
+                class="btn btn-secondary"
+                href="signin.html"
+              >
+                Sign in
+              </a>
+
+              <a
+                class="btn btn-primary"
+                href="signin.html?mode=signup"
+              >
+                Create account
+              </a>
+
+              ${menu}
+            `;
+        }
+      });
+
+    document
+      .querySelectorAll(
+        ".mobile-nav"
+      )
+      .forEach(nav => {
+        nav
+          .querySelectorAll(
+            '[data-mobile-auth], a[href^="signin.html"]'
+          )
+          .forEach(
+            el =>
+              el.remove()
+          );
+
+        if (state.user) {
+          const profileItem =
+            document.createElement(
+              "a"
+            );
+
+          profileItem.dataset.mobileAuth =
+            "true";
+
+          profileItem.className =
+            "mobile-auth-link";
+
+          profileItem.href =
+            "profile.html";
+
+          profileItem.textContent =
+            "Profile";
+
+          nav.appendChild(
+            profileItem
+          );
+
+          const signoutItem =
+            document.createElement(
+              "button"
+            );
+
+          signoutItem.dataset.mobileAuth =
+            "true";
+
+          signoutItem.className =
+            "mobile-auth-link";
+
+          signoutItem.type =
+            "button";
+
+          signoutItem.dataset.signout =
+            "true";
+
+          signoutItem.textContent =
+            "Sign out";
+
+          nav.appendChild(
+            signoutItem
+          );
+        } else {
+          const authItem =
+            document.createElement(
+              "a"
+            );
+
+          authItem.dataset.mobileAuth =
+            "true";
+
+          authItem.className =
+            "mobile-auth-link";
+
+          authItem.href =
+            "signin.html";
+
+          authItem.textContent =
+            "Sign in";
+
+          nav.appendChild(
+            authItem
+          );
+        }
+      });
   }
 
   async function hydrate() {
     try {
-      if (state.configured) {
-        state.session = await backend.getSession();
-        state.user = state.session?.user || null;
+      if (
+        state.configured
+      ) {
+        state.session =
+          await backend.getSession();
 
-        if (state.user) {
-          const library = await backend.fetchLibrary(state.user.id);
-          registerBooks(library.map(mapLibraryBook));
-          state.shelf = library.map(row => row.bookId || row.id);
-          state.progress = Object.fromEntries(
-            library.map(row => [row.bookId || row.id, Number(row.progressPercent || 0)])
+        state.user =
+          state.session?.user ||
+          null;
+
+        if (
+          state.user
+        ) {
+          const library =
+            await backend.fetchLibrary(
+              state.user.id
+            );
+
+          /*
+            Firestore shelf entries are registered
+            here, but the improved registerBooks()
+            function protects the current installed
+            EPUB metadata from old snapshots.
+          */
+          registerBooks(
+            library.map(
+              mapLibraryBook
+            )
           );
+
+          state.shelf =
+            library.map(
+              row =>
+                row.bookId ||
+                row.id
+            );
+
+          state.progress =
+            Object.fromEntries(
+              library.map(
+                row => [
+                  row.bookId ||
+                    row.id,
+                  Number(
+                    row.progressPercent ||
+                    0
+                  )
+                ]
+              )
+            );
         } else {
           state.shelf = [];
           state.progress = {};
         }
       } else {
-        state.shelf = readGuestShelf();
-        state.progress = readGuestProgress();
+        state.shelf =
+          readGuestShelf();
+
+        state.progress =
+          readGuestProgress();
       }
     } catch (error) {
-      console.error("ReadShelf initialization failed:", error);
-      state.shelf = readGuestShelf();
-      state.progress = readGuestProgress();
-      state.configured = false;
+      console.error(
+        "ReadShelf initialization failed:",
+        error
+      );
+
+      state.shelf =
+        readGuestShelf();
+
+      state.progress =
+        readGuestProgress();
+
+      state.configured =
+        false;
     }
 
-    state.ready = true;
+    state.ready =
+      true;
+
     renderAuthControls();
     updateShelfCount();
     syncShelfButtons();
-    const year = document.querySelector("[data-current-year]");
-    if (year) year.textContent = new Date().getFullYear();
-    window.dispatchEvent(new CustomEvent("readshelf:ready", { detail: { configured: state.configured, user: state.user } }));
+
+    const year =
+      document.querySelector(
+        "[data-current-year]"
+      );
+
+    if (year) {
+      year.textContent =
+        new Date()
+          .getFullYear();
+    }
+
+    window.dispatchEvent(
+      new CustomEvent(
+        "readshelf:ready",
+        {
+          detail: {
+            configured:
+              state.configured,
+            user:
+              state.user
+          }
+        }
+      )
+    );
   }
 
   async function signOut() {
     try {
-      await backend?.signOut?.();
-      state.session = null;
-      state.user = null;
-      state.shelf = [];
-      state.progress = {};
-      showToast("Signed out");
-      setTimeout(() => { location.href = "index.html"; }, 300);
+      await backend
+        ?.signOut?.();
+
+      state.session =
+        null;
+
+      state.user =
+        null;
+
+      state.shelf =
+        [];
+
+      state.progress =
+        {};
+
+      showToast(
+        "Signed out"
+      );
+
+      setTimeout(
+        () => {
+          location.href =
+            "index.html";
+        },
+        300
+      );
     } catch (error) {
-      console.error(error);
-      showToast("Could not sign out");
+      console.error(
+        error
+      );
+
+      showToast(
+        "Could not sign out"
+      );
     }
   }
 
   function initGlobalEvents() {
-    document.addEventListener("click", async event => {
-      const shelfButton = event.target.closest(".js-shelf-button");
-      if (shelfButton) await toggleShelf(shelfButton.dataset.bookId);
+    document.addEventListener(
+      "click",
+      async event => {
+        const shelfButton =
+          event.target.closest(
+            ".js-shelf-button"
+          );
 
-      const signout = event.target.closest("[data-signout]");
-      if (signout) await signOut();
+        if (shelfButton) {
+          await toggleShelf(
+            shelfButton.dataset
+              .bookId
+          );
+        }
 
-      const menuButton = event.target.closest("[data-menu-toggle]");
-      if (menuButton) {
-        const nav = document.querySelector(".mobile-nav");
-        if (nav) {
-          const open = nav.classList.toggle("open");
-          menuButton.setAttribute("aria-expanded", String(open));
+        const signout =
+          event.target.closest(
+            "[data-signout]"
+          );
+
+        if (signout) {
+          await signOut();
+        }
+
+        const menuButton =
+          event.target.closest(
+            "[data-menu-toggle]"
+          );
+
+        if (menuButton) {
+          const nav =
+            document.querySelector(
+              ".mobile-nav"
+            );
+
+          if (nav) {
+            const open =
+              nav.classList.toggle(
+                "open"
+              );
+
+            menuButton.setAttribute(
+              "aria-expanded",
+              String(open)
+            );
+          }
         }
       }
-    });
+    );
   }
 
   window.ReadShelf = {
-    get BOOKS() { return state.books; },
+    get BOOKS() {
+      return state.books;
+    },
+
     getShelf,
     getProgress,
     getUser,
@@ -388,5 +1181,12 @@
   };
 
   initGlobalEvents();
-  document.addEventListener("DOMContentLoaded", hydrate, { once: true });
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    hydrate,
+    {
+      once: true
+    }
+  );
 })();
