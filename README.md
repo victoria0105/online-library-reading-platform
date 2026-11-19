@@ -4,7 +4,7 @@
 
 ReadShelf is an online library and reading platform designed to make it easy for users to discover, save, and read books online.
 
-The goal of the project is to create a simple and user-friendly website where readers can search for books, view detailed book information, save books to a personal shelf, read supported books directly inside ReadShelf, and keep their reading progress synchronized with their account.
+The goal of the project is to create a simple and user-friendly website where readers can search for books, view detailed book information, save books to a personal shelf, read supported books directly inside ReadShelf, and keep their reading data synchronized with their account.
 
 ReadShelf is designed to reduce the number of steps between discovering a book and beginning to read it.
 
@@ -23,10 +23,10 @@ https://myreadshelf.vercel.app
 - Allow users to explore additional books using the Google Books API
 - Provide public-domain books that can be read without leaving the website
 - Allow users to save books to a personal shelf
-- Keep track of reading progress
+- Track and synchronize reading progress
 - Allow users to continue reading from their saved position
 - Support user accounts and personal profiles
-- Synchronize personal reading data
+- Synchronize personal reading data across sessions
 - Support bookmarks, highlights, and notes
 - Provide customizable reading settings
 - Create a responsive and accessible user experience
@@ -43,7 +43,7 @@ ReadShelf is designed for:
 - Readers interested in classic literature
 - Readers looking for public-domain books
 - Users who want to organize books they are interested in
-- Readers who want to track reading progress
+- Readers who want to track their reading progress
 - Users who want a personal online reading library
 - Readers who want to discover additional books through live search
 
@@ -122,8 +122,10 @@ Users should eventually be able to receive recommendations based on their intere
 - The system shall display accurate book reading availability.
 - The system shall allow users to add and remove books from My Shelf.
 - The system shall synchronize My Shelf using Cloud Firestore.
-- The system shall save reading progress.
-- The system shall save reading position.
+- The system shall save reading progress to Firestore for authenticated users.
+- The system shall restore reading progress after page reload or future sign-in.
+- The system shall mark a book as finished when progress reaches 100%.
+- The system shall save the reader's exact EPUB reading position.
 - The system shall support bookmarks.
 - The system shall support text highlights.
 - The system shall support reading notes.
@@ -132,6 +134,7 @@ Users should eventually be able to receive recommendations based on their intere
 - The system shall support Email/Password authentication.
 - The system shall support Google Sign-In.
 - The system shall provide user profiles.
+- The system shall save profile information to Firestore.
 - The system shall restrict users to their own private data.
 - The system shall provide complete metadata for installed books.
 - The system shall support responsive layouts.
@@ -208,7 +211,7 @@ The saved book remains available after the user refreshes or signs in again.
 
 1. The user signs in.
 2. The user opens a previously started book.
-3. ReadShelf loads the saved reading information.
+3. ReadShelf loads the saved reading progress and reading position from Firestore.
 4. The user opens the EPUB Reader.
 5. The Reader resumes from the saved location.
 
@@ -228,11 +231,11 @@ The user continues from where they previously stopped.
 1. The user opens the Create Account page.
 2. The user enters their account information.
 3. Firebase Authentication creates the account.
-4. ReadShelf creates the associated user profile.
+4. ReadShelf creates the associated Firestore user profile.
 5. The user is signed in.
 
 **Expected Result:**  
-The user receives a personal ReadShelf account.
+The user receives a personal ReadShelf account and associated profile.
 
 ---
 
@@ -249,13 +252,33 @@ The user receives a personal ReadShelf account.
 3. Firebase Authentication opens the Google authentication flow.
 4. The user chooses a Google account.
 5. ReadShelf signs the user in.
+6. ReadShelf creates or updates the associated user profile.
 
 **Expected Result:**  
 The user can access ReadShelf without creating a separate password.
 
 ---
 
-## Use Case 7: Highlight and Save a Note
+## Use Case 7: Update Profile
+
+**User:** Signed-In Reader
+
+**Goal:** Save personal profile information.
+
+### Steps
+
+1. The user opens the Profile page.
+2. The user changes their display name, bio, or favorite genres.
+3. The user saves the changes.
+4. ReadShelf stores the updated information in Firestore.
+5. The information is loaded again when the user returns.
+
+**Expected Result:**  
+The user's profile information remains available across sessions.
+
+---
+
+## Use Case 8: Highlight and Save a Note
 
 **User:** Reader
 
@@ -294,8 +317,15 @@ The current ReadShelf website includes:
 - Firebase Authentication
 - Cloud Firestore
 - Firestore-backed My Shelf
+- Firestore-backed user profiles
 - Saved reading progress
 - Saved reading position
+- Reading progress restored after reload/sign-in
+- Automatic finished status at 100% progress
+- Bookmarks
+- Highlights
+- Notes
+- Reader customization
 - Real book cover images
 - AI-generated custom covers for the local collection
 - Complete metadata for installed books
@@ -339,22 +369,22 @@ For this reason, Google Books is primarily used for **discovery and metadata**.
 
 # Project Gutenberg and the Local ReadShelf Collection
 
-In addition to the Google Books API, ReadShelf includes a locally hosted collection of public-domain EPUB books obtained from **Project Gutenberg**.
+In addition to the Google Books API, ReadShelf includes a locally hosted collection of public-domain EPUB books from **Project Gutenberg**.
 
 This was an important design decision for the project.
 
 During development, Google Books was successfully connected for live search and metadata. However, many Google Books results redirect users to Google's reading website or only provide limited preview access.
 
-That created a problem for the original ReadShelf concept: the goal of the project is to provide an integrated library where users can discover and read books without constantly leaving the ReadShelf website.
+That created a problem for the original ReadShelf concept: the goal is to provide an integrated library where users can discover and read books without constantly leaving the ReadShelf website.
 
-To solve this, ReadShelf uses public-domain EPUB books from **Project Gutenberg** for its complete in-site reading collection.
+To solve this, ReadShelf uses public-domain EPUB books from Project Gutenberg for its complete in-site reading collection.
 
 This creates two complementary systems:
 
-- **Google Books API** → book discovery, live search, covers, metadata, and external preview information
+- **Google Books API** → discovery, live search, covers, metadata, and external reading availability
 - **Project Gutenberg** → public-domain EPUB books that can be hosted and read completely inside ReadShelf
 
-This allows ReadShelf to provide both a large searchable book database and a smaller curated collection of books that can be fully read inside the website.
+This allows ReadShelf to provide both a large searchable catalog and a smaller curated collection of books that can be fully read inside the website.
 
 ---
 
@@ -390,7 +420,7 @@ The collection includes:
 - Anne of Green Gables — L. M. Montgomery
 - The ReadShelf Reader: An Original Demonstration — ReadShelf
 
-The public-domain classic EPUB editions are part of the locally hosted reading collection based on Project Gutenberg sources, while the ReadShelf demonstration ebook was created specifically for this project.
+The public-domain classic EPUB editions are part of the locally hosted collection, while the ReadShelf demonstration ebook was created specifically for this project.
 
 The EPUB files are stored under:
 
@@ -427,7 +457,7 @@ Every locally installed book includes:
 - EPUB location
 - Reading availability
 
-The Book Details page displays four main metadata fields:
+The Book Details page displays:
 
 - **Published**
 - **Genre**
@@ -436,7 +466,7 @@ The Book Details page displays four main metadata fields:
 
 Each installed book also has an individual **About this book** description.
 
-For EPUB books, the displayed page count is used as catalog/reference metadata. EPUB pagination itself can change depending on screen size, font size, and reading settings.
+For EPUB books, the displayed page count is used as catalog/reference metadata. EPUB pagination can change depending on screen size, font size, and reader settings.
 
 ---
 
@@ -444,9 +474,9 @@ For EPUB books, the displayed page count is used as catalog/reference metadata. 
 
 ReadShelf uses custom illustrated covers for the locally installed books.
 
-The covers were created specifically for this project using **AI-assisted image generation** and then integrated into the ReadShelf interface.
+The covers were created specifically for this project using **AI-assisted image generation** and integrated into the ReadShelf interface.
 
-This gives the local collection a consistent visual style instead of relying only on generic text covers.
+This gives the local collection a consistent visual style instead of relying only on generic placeholder covers.
 
 Cover files are stored under:
 
@@ -481,12 +511,14 @@ ReadShelf includes a complete in-site EPUB Reader powered by EPUB.js.
 The Reader supports:
 
 - Complete locally hosted EPUB books
-- Previous page
-- Next page
+- Previous page navigation
+- Next page navigation
 - Table of Contents navigation
 - Saved reading position
 - Reading progress percentage
 - Automatic progress saving
+- Progress restoration after reload
+- Progress restoration after future sign-in
 - Bookmarks
 - Text highlights
 - Notes
@@ -503,11 +535,71 @@ The Reader supports:
 
 The Reader also handles EPUB front matter.
 
-When a user opens a book for the first time, ReadShelf can show the book's cover or title page.
+When a user opens a book for the first time, ReadShelf can display the book's cover or title page.
 
-If the first page is actually blank, the Reader automatically moves forward to readable content.
+If the opening page is actually blank, the Reader automatically moves to readable content.
 
 Returning users resume from their saved location.
+
+---
+
+# Reading Progress Synchronization
+
+Authenticated users' reading progress is synchronized with Cloud Firestore.
+
+ReadShelf stores a percentage value for each saved book in:
+
+```text
+users/{uid}/library/{bookId}
+```
+
+The stored data includes:
+
+```text
+progressPercent
+status
+lastReadAt
+updatedAt
+completedAt
+```
+
+Progress behavior includes:
+
+- Reading progress is saved while the user reads.
+- Progress remains after page reload.
+- Progress is restored after the user signs in again.
+- Progress belongs only to the authenticated user.
+- A book with progress greater than 0% is marked as `reading`.
+- A book that reaches 100% is marked as `finished`.
+- The completion time is stored when a book reaches 100%.
+
+For locally hosted EPUB books, ReadShelf also stores the exact EPUB reading position using a CFI so the Reader can return to the user's precise location.
+
+---
+
+# Reader State and Annotations
+
+Detailed EPUB reading state is stored under:
+
+```text
+users/{uid}/readingSessions/{bookId}
+```
+
+The reading state can include:
+
+- Book ID
+- EPUB CFI reading position
+- Reading percentage
+- Highlights
+- Highlight colors
+- Highlighted text
+- Notes
+- Bookmarks
+- Updated timestamp
+
+This allows the Reader to preserve more than only a percentage. It can also restore the exact reading location and saved annotations for authenticated users.
+
+Guest users can still use local browser storage, but cloud synchronization is available only when signed in.
 
 ---
 
@@ -548,8 +640,12 @@ Firestore stores information such as:
 - My Shelf
 - Reading status
 - Reading progress
+- Exact EPUB reading position
 - Book metadata snapshots
-- User preferences
+- Favorite genres
+- Highlights
+- Notes
+- Bookmarks
 - Reading-state information
 
 ## Firestore Structure
@@ -588,7 +684,13 @@ users
     │       └── completedAt
     │
     └── readingSessions
-        └── {sessionId}
+        └── {bookId}
+            ├── bookId
+            ├── cfi
+            ├── progress
+            ├── highlights
+            ├── bookmarks
+            └── updatedAt
 ```
 
 The authenticated Firebase UID is used as the user's Firestore document ID.
@@ -605,13 +707,24 @@ firebase/firestore.rules
 
 The rules are designed so authenticated users can access only their own private data.
 
+Security rules currently protect:
+
+- User profile documents
+- Saved-book library data
+- Reading progress
+- Reader sessions
+- Highlights
+- Notes
+- Bookmarks
+
 Security goals include:
 
-- Users cannot access another user's library
-- Users can only modify their own profile
-- Users can only modify their own saved books
-- Reading progress is restricted to valid values
-- Private user information is separated from public book information
+- Users cannot access another user's profile.
+- Users cannot access another user's library.
+- Users cannot access another user's reading sessions.
+- Users can only modify their own saved books.
+- Reading progress must remain between 0 and 100.
+- Private user information is separated from public book information.
 
 ---
 
@@ -643,25 +756,50 @@ This prevents older saved books from incorrectly displaying fields such as:
 - Length: Unknown
 - Language: Unknown
 
-The current locally installed book catalog remains the source of truth for the local EPUB collection.
+The current locally installed catalog remains the source of truth for local EPUB metadata.
 
 ---
 
-# User Profile
+# User Profile and Firestore
 
-The ReadShelf Profile page includes:
+The ReadShelf Profile page is connected to Cloud Firestore.
+
+Each authenticated user has a profile document stored at:
+
+```text
+users/{uid}
+```
+
+Profile information includes:
 
 - Display name
 - Email address
-- User bio
+- Profile photo URL when available
+- Bio
 - Favorite genres
-- Account information
-- Saved-book statistics
-- Reading statistics
-- Reading progress information
-- Sign out
+- Authentication providers
+- Created timestamp
+- Updated timestamp
 
-Profile information is associated with the authenticated Firebase user.
+Users can currently update:
+
+- Display name
+- Bio
+- Favorite genres
+
+The updated information is stored in Firestore and loaded again when the user returns to the Profile page.
+
+The Profile page also displays:
+
+- Saved-book statistics
+- Number of books currently being read
+- Number of finished books
+- Average reading progress
+- Account email
+- Authentication provider
+- Email verification status
+
+Firestore security rules restrict profile access to the authenticated owner.
 
 ---
 
@@ -719,13 +857,15 @@ Profile information is associated with the authenticated Firebase user.
 
 **Firebase Authentication** provides secure account registration and authentication without requiring ReadShelf to directly manage passwords.
 
-**Cloud Firestore** provides flexible storage for profiles, saved books, and reading progress.
+**Cloud Firestore** provides flexible cloud storage for profiles, saved books, reading progress, exact reading locations, and reader-state information.
 
 **Google Books API** provides live book discovery and metadata without requiring ReadShelf to maintain a worldwide book database.
 
 **Project Gutenberg** provides public-domain books that can be used for the locally hosted complete-book collection.
 
 **EPUB.js** allows complete EPUB books to be rendered directly inside ReadShelf.
+
+**JSZip** supports EPUB archive handling required by the Reader.
 
 **GitHub** provides source control, project history, documentation, and issue tracking.
 
@@ -741,7 +881,7 @@ ReadShelf separates **book discovery** from **full-text reading access**.
 
 The project uses:
 
-### Google Books API
+## Google Books API
 
 Used for:
 
@@ -752,7 +892,7 @@ Used for:
 - External preview information
 - Reading availability
 
-### Project Gutenberg
+## Project Gutenberg
 
 Used for:
 
@@ -794,6 +934,8 @@ This information is used to provide ReadShelf functionality.
 
 Passwords are handled by Firebase Authentication and are not stored directly in the ReadShelf Firestore database.
 
+User-specific Firestore data is stored under the authenticated user's UID.
+
 ---
 
 # Security
@@ -804,6 +946,7 @@ Current security practices include:
 - Firestore Security Rules
 - User-specific Firestore document access
 - Firebase authorized authentication domains
+- Validation of reading-progress values
 - Input validation
 - Avoiding unnecessary sensitive-data storage
 - Keeping private keys and administrator credentials out of GitHub
@@ -939,7 +1082,7 @@ Completed work includes:
 - Researched external book APIs
 - Researched database and authentication technologies
 - Created the ReadShelf GitHub repository
-- Created the GitHub Project Board
+- Created and maintained the GitHub Project Board
 - Created and maintained the project time log
 - Created and presented project presentations
 - Created homepage wireframes
@@ -950,7 +1093,7 @@ Completed work includes:
 - Built My Shelf
 - Built the EPUB Reader
 - Built Sign In and Create Account
-- Built User Profile
+- Built the User Profile page
 - Added responsive layouts
 - Created the ReadShelf Firebase project
 - Connected Firebase Authentication
@@ -961,8 +1104,19 @@ Completed work includes:
 - Connected Cloud Firestore
 - Added Firestore Security Rules
 - Added Firestore-backed My Shelf
+- Added Firestore-backed user profiles
+- Verified user profile creation under `users/{uid}`
+- Added profile display-name saving
+- Added profile bio saving
+- Added favorite-genre saving
+- Added profile data restoration after reload
 - Added reading-progress synchronization
-- Added reading-position synchronization
+- Added progress restoration after reload
+- Added progress restoration after sign-in
+- Added automatic `reading` and `finished` status updates
+- Added 100% completion handling
+- Added reading-position synchronization using EPUB CFI
+- Added cloud synchronization for EPUB reader state
 - Connected the Google Books API
 - Added live Google Books search
 - Added real Google Books metadata
@@ -989,7 +1143,7 @@ Completed work includes:
 - Added genre information
 - Added reference length/page information
 - Added language information
-- Fixed older Firestore metadata overriding new catalog information
+- Fixed older Firestore metadata overriding newer catalog information
 - Connected GitHub to Vercel
 - Deployed the live website
 - Improved responsive behavior
@@ -1006,13 +1160,12 @@ The next development phase will focus primarily on testing, refinement, recommen
 
 Planned next steps include:
 
-- Test all locally installed EPUB books
-- Test My Shelf with multiple accounts
-- Test Firestore security between different users
+- Continue testing all locally installed EPUB books
+- Test My Shelf with multiple user accounts
+- Perform additional Firestore security testing between different users
 - Test Google Sign-In across multiple browsers
-- Test password reset
-- Test reading progress across multiple sessions
-- Test bookmarks, highlights, and notes
+- Continue testing password reset
+- Continue testing bookmarks, highlights, notes, and reading state across sessions
 - Improve mobile and tablet Reader layouts
 - Improve error handling
 - Improve loading states
@@ -1083,10 +1236,15 @@ Major working components include:
 - Firebase Authentication
 - Email/Password login
 - Google Sign-In
+- Password reset
 - Cloud Firestore
 - Firestore-backed My Shelf
+- Firestore-backed user profiles
+- Profile display name, bio, and favorite genres
 - Saved reading progress
-- Saved reading positions
+- Saved exact reading positions
+- Reading progress restored after reload/sign-in
+- Automatic finished status at 100%
 - Google Books API search
 - Project Gutenberg public-domain books
 - Complete locally hosted EPUB reading
