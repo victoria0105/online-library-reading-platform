@@ -29,15 +29,6 @@ fetch_book() {
   return 1
 }
 
-fail=0
-fetch_book 120 treasure-island || fail=1
-fetch_book 1184 count-of-monte-cristo || fail=1
-fetch_book 74 tom-sawyer || fail=1
-fetch_book 2852 hound-of-baskervilles || fail=1
-fetch_book 236 jungle-book || fail=1
+fetch_book 98 tale-of-two-cities
 
-if [ "$fail" -ne 0 ]; then
-  echo "One or more EPUBs are missing. Do not upload the new catalog until all five are present."
-  exit 1
-fi
-echo "All five EPUBs are ready. Upload assets/ebooks/*.epub, assets/covers/*.jpg and js/installed-books.js to their corresponding GitHub folders."
+echo "Done. Upload assets/ebooks/tale-of-two-cities.epub, assets/covers/tale-of-two-cities.jpg, and js/installed-books.js to GitHub."

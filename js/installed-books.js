@@ -1,17 +1,17 @@
 /* Locally hosted EPUB catalog. Page counts are approximate reference lengths. */
 window.ReadShelfEbookManifest = [
   {
-    "id": "readshelf-demo",
-    "title": "The ReadShelf Reader: An Original Demonstration",
-    "author": "ReadShelf",
-    "year": 2026,
-    "pages": 8,
-    "genre": "Fiction",
+    "id": "tale-of-two-cities",
+    "title": "A Tale of Two Cities",
+    "author": "Charles Dickens",
+    "year": 1859,
+    "pages": 489,
+    "genre": "Historical Fiction",
     "language": "English",
-    "description": "An original demonstration ebook created for ReadShelf to showcase the platform's full-book reader, including page navigation, saved reading progress, bookmarks, highlights, notes, themes, and reading preferences.",
-    "epubPath": "assets/ebooks/readshelf-demo.epub",
-    "thumbnail": "assets/covers/readshelf-demo.jpg",
-    "sourcePage": "Original ReadShelf demo ebook, created for this project"
+    "description": "Set during the French Revolution, this novel follows the intertwined lives of Charles Darnay, Lucie Manette, and Sydney Carton across London and Paris. It explores sacrifice, resurrection, love, and justice against a backdrop of political upheaval and social unrest.",
+    "epubPath": "assets/ebooks/tale-of-two-cities.epub",
+    "thumbnail": "assets/covers/tale-of-two-cities.jpg",
+    "sourcePage": "Installed public-domain EPUB for ReadShelf"
   },
   {
     "id": "pride-and-prejudice",
